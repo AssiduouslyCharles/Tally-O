@@ -3,7 +3,7 @@ import json
 import config
 
 # eBay Finances API endpoint for getTransactions
-EBAY_API_URL = "https://apiz.sandbox.ebay.com/sell/finances/v1/transaction"
+EBAY_API_URL = "https://apiz.ebay.com/sell/finances/v1/transaction"
 
 # Headers for the request
 HEADERS = {
