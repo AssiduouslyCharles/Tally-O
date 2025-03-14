@@ -15,7 +15,7 @@ HEADERS = {
 # Query parameters
 PARAMS = {
     "transaction_type": "ALL",
-    "limit": 10,
+    "limit": 20,
     "offset": 0
 }
 
