@@ -26,7 +26,7 @@ XML_PAYLOAD = f"""<?xml version="1.0" encoding="utf-8"?>
     <ActiveList>
         <Include>true</Include>
         <Pagination>
-            <EntriesPerPage>150</EntriesPerPage>
+            <EntriesPerPage>200</EntriesPerPage>
             <PageNumber>1</PageNumber>
         </Pagination>
     </ActiveList>
