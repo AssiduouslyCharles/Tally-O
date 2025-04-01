@@ -65,7 +65,7 @@ if response.status_code == 200:
         purchased_at = ""
         sku = item.find("SKU").text if item.find("SKU") else ""
         quant_sold = item.find("QuantitySold").text if item.find("QuantitySold") else "N/A"
-        sold_for_price = transaction.find("TransactionPrice").text if item.find("TransactionPrice") else "N/A"
+        sold_for_price = transaction.find("TransactionPrice").text if transaction.find("TransactionPrice") else "N/A"
         shipping_paid = item.find("ShippingServiceCost").text if item.find("ShippingServiceCost") else "N/A"
         #fixed_final_fee = ""
         #final_fee = ""
