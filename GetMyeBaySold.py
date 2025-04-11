@@ -26,8 +26,9 @@ XML_PAYLOAD = f"""<?xml version="1.0" encoding="utf-8"?>
     </RequesterCredentials>
     <SoldList>
         <Include>true</Include>
+        <DurationInDays>60</DurationInDays>
         <Pagination>
-            <EntriesPerPage>50</EntriesPerPage>
+            <EntriesPerPage>200</EntriesPerPage>
             <PageNumber>1</PageNumber>
         </Pagination>
     </SoldList>
@@ -49,9 +50,10 @@ if response.status_code == 200:
     for transaction in transactions:
         item = transaction.find("Item")
         order_id = transaction.find("OrderLineItemID").text if transaction.find("OrderLineItemID") else "N/A"
+        transaction_id = transaction.find("TransactionID").text if transaction.find("TransactionID") else "N/A"
         item_id = item.find("ItemID").text if item.find("ItemID") else "N/A"
         item_title = item.find("Title").text if item.find("Title") else "N/A"
-        photo_URL = item.find("PictureDetails").text if item.find("PictureDetails") else "N/A"
+        photo_URL = item.find("ViewItemURL").text if item.find("ViewItemURL") else "N/A"
         list_date = item.find("StartTime").text if item.find("StartTime") else "N/A"
         sold_date = item.find("EndTime").text if item.find("EndTime") else "N/A"
         # Convert date strings to datetime objects
@@ -65,26 +67,29 @@ if response.status_code == 200:
         purchased_at = ""
         sku = item.find("SKU").text if item.find("SKU") else ""
         quant_sold = item.find("QuantitySold").text if item.find("QuantitySold") else "N/A"
-        sold_for_price = transaction.find("TransactionPrice").text if transaction.find("TransactionPrice") else "N/A"
+        sold_for_price = transaction.find("TransactionPrice").text if transaction.find("TransactionPrice") else "N/A" #Total price paid by buyer
         shipping_paid = item.find("ShippingServiceCost").text if item.find("ShippingServiceCost") else "N/A"
-        #fixed_final_fee = ""
-        #final_fee = ""
-        #international_fee = ""
-        #cost_to_ship = ""
-        #net_return = (sold_for_price + shipping_paid) - (fixed_final_fee + final_fee + international_fee + cost_to_ship + item_cost)
-        #roi = net_return/item_cost
-        #net_profit_margin = net_return/(sold_for_price + shipping_paid)
-        #refund_to_buyer = ""
-        #refund_owed = ""
-        #refund_to_seller = ""
+        
+        fixed_final_fee = ""
+        final_fee = ""
+        international_fee = ""
+        cost_to_ship = ""
+        net_return = ""
+        roi = ""
+        net_profit_margin = ""
+        refund_to_buyer = ""
+        refund_owed = ""
+        refund_to_seller = ""
+
         #Append to list
-        sold_items.append([order_id, item_id, item_title, photo_URL, list_date, sold_date, time_to_sell, item_cost, purchased_at, sku, quant_sold, sold_for_price, shipping_paid])
+        sold_items.append([order_id, transaction_id, item_id, item_title, photo_URL, list_date, sold_date, time_to_sell, item_cost, purchased_at, sku, quant_sold, sold_for_price, shipping_paid, fixed_final_fee, final_fee, international_fee, cost_to_ship, net_return, roi, net_profit_margin, refund_to_buyer, refund_owed, refund_to_seller])
 
     #Write data to CSV file
     csv_file = "sold_list.csv"
     with open(csv_file, mode="w", newline="", encoding="utf-8") as file:
         writer = csv.writer(file)
-        writer.writerow(["Order ID", "Item ID", "Title", "Photo URL", "List Date", "Sold Date", "Time To Sell", "Item Cost", "Purchased At", "SKU", "Quantity Sold", "Sold For Price", "Shipping Paid"])
+        writer.writerow(["Order ID", "Transaction ID", "Item ID", "Title", "Photo URL", "List Date", "Sold Date", "Time To Sell(days)", "Item Cost", "Purchased At", "SKU", "Quantity Sold", "Sold For Price", "Shipping Paid", 
+                         "Fixed Final Fee", "Final Fee", "International Fee", "Cost To Ship", "Net Return", "ROI", "Net Profit Margin", "Refund To Buyer", "Refund Owed", "Refund To Seller"])
         writer.writerows(sold_items)
 
     print(f"Successfully saved to {csv_file}")
