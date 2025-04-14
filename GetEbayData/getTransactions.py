@@ -14,7 +14,7 @@ HEADERS = {
 }
 
 # Pagination parameters
-limit = 500
+limit = 1000
 offset = 0
 PARAMS = {
     "transaction_type": "ALL",
