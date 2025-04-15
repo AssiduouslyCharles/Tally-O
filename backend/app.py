@@ -6,6 +6,9 @@ from urllib.parse import urlencode
 from flask import Flask, jsonify, render_template, redirect, request, session, url_for
 
 load_dotenv()  # Load environment variables from .env file
+print("FLASK_SECRET_KEY:", os.environ.get("FLASK_SECRET_KEY"))
+print("EBAY_CLIENT_ID:", os.environ.get("EBAY_CLIENT_ID"))
+print("EBAY_REDIRECT_URI:", os.environ.get("EBAY_REDIRECT_URI"))
 
 app = Flask(__name__)
 
