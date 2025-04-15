@@ -68,7 +68,7 @@ def ebay_login():
     auth_url = f"{EBAY_OAUTH_URL}?{query_string}"
     
     # For troubleshooting: log the constructed URL to the console
-    print("Constructed OAuth URL:", auth_url)
+    #print("Constructed OAuth URL:", auth_url)
     
     # For debugging purposes, return the URL as plain text so you can inspect it in your browser.
     # Once you verify it, comment out the return below and uncomment the redirect.
