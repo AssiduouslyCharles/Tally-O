@@ -66,6 +66,11 @@ def index():
     # Serve the home page – ensure you have an index.html in your templates folder.
     return render_template('index.html')
 
+@app.route('/ping')
+def ping():
+    return "pong"
+
+
 @app.route('/api/test')
 def test_api():
     return jsonify({"message": "Hello, world!"})
