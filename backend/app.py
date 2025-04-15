@@ -10,6 +10,9 @@ from bs4 import BeautifulSoup
 
 # Determine the directory where this file is located
 basedir = os.path.abspath(os.path.dirname(__file__))
+project_root = os.path.abspath(os.path.join(basedir, '..'))  # .../Tally-O
+db_path = os.path.join(project_root, 'tally0.db')
+
 # Construct the full path to the .env file
 dotenv_path = os.path.join(basedir, '.env')
 # Load environment variables from the specified .env file
@@ -68,6 +71,13 @@ def index():
 def ping():
     return "pong"
 
+@app.route('/init-db')
+def init_db():
+    schema_file = os.path.join(project_root, 'db', 'schema.sql')
+    with sqlite3.connect(db_path) as conn:
+        with open(schema_file, 'r') as f:
+            conn.executescript(f.read())
+    return f"Initialized DB at {db_path}", 200
 
 @app.route('/api/test')
 def test_api():
@@ -396,7 +406,7 @@ def update_ebay_data():
     
     try:
         # Open a connection to the SQLite database (change the path if needed)
-        conn = sqlite3.connect('tally0.db')
+        conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
 
         # Call helper functions to update the database
