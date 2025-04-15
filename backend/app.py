@@ -139,7 +139,7 @@ def get_transactions_data(cursor, access_token):
     Retrieve transactions from the eBay Finances API and insert the records 
     into the 'transactions' table. (Table schema is managed separately via schema.sq)
     """
-    EBAY_API_URL = "https://apiz.ebay.com/sell/finances/v1/transaction"
+    EBAY_API_URL = "https://api.ebay.com/sell/finances/v1/transaction"
     headers = {
         "Authorization": f"Bearer {access_token}",
         "Content-Type": "application/json",
