@@ -86,10 +86,10 @@ def ebay_login():
     
     # For debugging purposes, return the URL as plain text so you can inspect it in your browser.
     # Once you verify it, comment out the return below and uncomment the redirect.
-    return auth_url
+    #return auth_url
     
     # When debugging is complete, switch back to redirecting:
-    #return redirect(auth_url)
+    return redirect(auth_url)
 
 @app.route('/auth/ebay/callback')
 def ebay_callback():
