@@ -1,6 +1,4 @@
 import os
-for var in ("HTTP_PROXY", "HTTPS_PROXY", "http_proxy", "https_proxy"):
-    os.environ.pop(var, None)
 from dotenv import load_dotenv
 import base64
 import requests
