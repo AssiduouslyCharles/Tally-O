@@ -4,6 +4,7 @@ import base64
 import requests
 from urllib.parse import urlencode
 from flask import Flask, jsonify, render_template, redirect, request, session, url_for
+from datetime import timedelta
 
 # Determine the directory where this file is located
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -12,13 +13,20 @@ dotenv_path = os.path.join(basedir, '.env')
 # Load environment variables from the specified .env file
 load_dotenv(dotenv_path)
 
-
 app = Flask(__name__)
 
-# Use a strong random value for the secret key, or load it from a secure file/environment variable
+# Use a strong random value for the secret key or load it from your environment
 app.secret_key = os.environ.get("FLASK_SECRET_KEY")
 
-# eBay API credentials (ensure these are set in your environment)
+# Secure session configuration for Session-Based Storage:
+app.config.update(
+    SESSION_COOKIE_SECURE=True,       # Send cookies only over HTTPS
+    SESSION_COOKIE_HTTPONLY=True,     # Disallow JavaScript to access the cookie
+    SESSION_COOKIE_SAMESITE='Lax',      # Helps mitigate CSRF attacks
+    PERMANENT_SESSION_LIFETIME=timedelta(minutes=30)  # Set session lifetime as needed
+)
+
+# eBay API credentials from the environment
 EBAY_CLIENT_ID = os.environ.get("EBAY_CLIENT_ID")            # Your eBay Client ID (Application ID)
 EBAY_CLIENT_SECRET = os.environ.get("EBAY_CLIENT_SECRET")    # Your eBay Client Secret (Cert ID)
 EBAY_REDIRECT_URI = os.environ.get("EBAY_REDIRECT_URI")
@@ -49,56 +57,39 @@ EBAY_SCOPES = ("https://api.ebay.com/oauth/api_scope "
                "https://api.ebay.com/oauth/api_scope/sell.stores.readonly "
                "https://api.ebay.com/oauth/scope/sell.edelivery")
 
-@app.route('/debug-env')
-def debug_env():
-    return {
-        "FLASK_SECRET_KEY": os.environ.get("FLASK_SECRET_KEY"),
-        "EBAY_CLIENT_ID": os.environ.get("EBAY_CLIENT_ID"),
-        "EBAY_REDIRECT_URI": os.environ.get("EBAY_REDIRECT_URI")
-    }
-
-# Route for the home page (frontend will eventually be served here or separately)
 @app.route('/')
 def index():
-    # Initially serve a basic HTML template. Create the templates folder and index.html inside it.
+    # Serve the home page – ensure you have an index.html in your templates folder.
     return render_template('index.html')
 
-# A simple test REST endpoint
 @app.route('/api/test')
 def test_api():
     return jsonify({"message": "Hello, world!"})
 
 @app.route('/auth/ebay/login')
 def ebay_login():
-    # Create a dictionary of parameters for the OAuth URL
+    # Create the parameter dictionary for the OAuth URL
     params = {
         "client_id": EBAY_CLIENT_ID,
         "response_type": "code",
         "redirect_uri": EBAY_REDIRECT_URI,
         "scope": EBAY_SCOPES,
     }
-    # Use urlencode to safely encode the query parameters
+    # Encode query parameters safely
     query_string = urlencode(params)
     auth_url = f"{EBAY_OAUTH_URL}?{query_string}"
     
-    # For troubleshooting: log the constructed URL to the console
-    #print("Constructed OAuth URL:", auth_url)
-    
-    # For debugging purposes, return the URL as plain text so you can inspect it in your browser.
-    # Once you verify it, comment out the return below and uncomment the redirect.
-    #return auth_url
-    
-    # When debugging is complete, switch back to redirecting:
+    # Redirect the user to the constructed OAuth URL
     return redirect(auth_url)
 
 @app.route('/auth/ebay/callback')
 def ebay_callback():
-    # Retrieve the authorization code from the URL parameters
+    # Retrieve the authorization code provided by eBay
     code = request.args.get('code')
     if not code:
         return "Error: Missing authorization code.", 400
 
-    # eBay requires Basic authentication with your client ID and client secret.
+    # Construct the Basic Authentication header required by eBay
     auth_header = base64.b64encode(f"{EBAY_CLIENT_ID}:{EBAY_CLIENT_SECRET}".encode()).decode()
     headers = {
         "Content-Type": "application/x-www-form-urlencoded",
@@ -117,21 +108,24 @@ def ebay_callback():
 
     token_data = token_response.json()
 
-    # Store tokens in the session (for demonstration; consider a persistent storage in production)
+    # Store tokens in the session. With our secure session configuration,
+    # these tokens will be stored as signed cookies (client-side) for the duration of the session.
     session['access_token'] = token_data.get('access_token')
     session['refresh_token'] = token_data.get('refresh_token')
 
-    # After successful login, redirect to a dashboard or home page
+    # Redirect to the dashboard or home page upon successful login
     return redirect(url_for('dashboard'))
 
 @app.route('/dashboard')
 def dashboard():
+    # Retrieve the access token from the session
     access_token = session.get('access_token')
     if not access_token:
         return redirect(url_for('ebay_login'))
-    # You could now use the access token to request user data from eBay and display it
+    
+    # Render the dashboard page with the token. Adjust your dashboard.html accordingly.
     return render_template('dashboard.html', token=access_token)
 
 if __name__ == '__main__':
-    # Debug mode is helpful during development
+    # Run your Flask application in debug mode during development
     app.run(debug=True)
