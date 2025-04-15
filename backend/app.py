@@ -5,7 +5,13 @@ import requests
 from urllib.parse import urlencode
 from flask import Flask, jsonify, render_template, redirect, request, session, url_for
 
-load_dotenv()  # Load environment variables from .env file
+# Determine the directory where this file is located
+basedir = os.path.abspath(os.path.dirname(__file__))
+# Construct the full path to the .env file
+dotenv_path = os.path.join(basedir, '.env')
+# Load environment variables from the specified .env file
+load_dotenv(dotenv_path)
+
 
 app = Flask(__name__)
 
