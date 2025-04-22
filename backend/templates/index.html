@@ -9,32 +9,21 @@
     />
   </head>
   <body>
-    <header>
-      <h1>Welcome to Your Tally-O Dashboard</h1>
-      <nav>
-        <button
-          onclick="window.location.href='https://assiduouslycharles.pythonanywhere.com/'"
-        >
-          Home
-        </button>
-        <button
-          onclick="window.location.href='https://assiduouslycharles.pythonanywhere.com/'"
-        >
-          Inventory
-        </button>
-        <button
-          onclick="window.location.href='https://assiduouslycharles.pythonanywhere.com/'"
-        >
-          Sold
-        </button>
-        <button
-          onclick="window.location.href='https://assiduouslycharles.pythonanywhere.com/'"
-        >
-          Insights
-        </button>
-      </nav>
+    <header class="site-header">
+      <div class="header-left">
+        <h1>Welcome to Your Tally-O Dashboard</h1>
+        <nav>
+          <button onclick="window.location.href='/'">Home</button>
+          <button onclick="window.location.href='/inventory'">Inventory</button>
+          <button onclick="window.location.href='/sold'">Sold</button>
+          <button onclick="window.location.href='/insights'">Insights</button>
+        </nav>
+      </div>
+      <div class="header-right">
+        <!-- Moved login button here -->
+        <button id="login-btn">Login with eBay</button>
+      </div>
     </header>
-
     <main>
       <!-- Login button initiates the OAuth login process -->
       <button id="login-btn">Login with eBay</button>
