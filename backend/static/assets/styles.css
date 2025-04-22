@@ -2,18 +2,36 @@ body {
   font-family: Arial, sans-serif;
   margin: 0;
   padding: 0;
+  /* center‑text remains but flex in header takes precedence for its children */
   text-align: center;
   background: #f5f5f5;
 }
 
 header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   background: #24690d;
   color: #ffffff;
   padding: 20px;
 }
 
+header .header-left {
+  display: flex;
+  align-items: center;
+}
+
+/* space out the nav buttons a bit */
+header .header-left nav button {
+  margin-left: 10px;
+}
+
+/*header .header-right {
+   nothing special needed—flex places it on the right 
+}*/
+
 main {
-  margin-top: 40px;
+  margin-top: 50px;
 }
 
 button {
