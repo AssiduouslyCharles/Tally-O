@@ -423,6 +423,38 @@ def update_ebay_data():
     
     return jsonify({"status": "eBay data updated successfully"})
 
+@app.route('/api/transactions')
+def api_transactions():
+    try:
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM transactions")
+        rows = cursor.fetchall()
+        # Optionally, convert rows to a list of dictionaries for JSON serialization.
+        columns = [column[0] for column in cursor.description]
+        data = [dict(zip(columns, row)) for row in rows]
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        conn.close()
+    return jsonify(data)
+
+@app.route('/api/sold-items')
+def api_sold_items():
+    try:
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM sold_items")
+        rows = cursor.fetchall()
+        columns = [column[0] for column in cursor.description]
+        data = [dict(zip(columns, row)) for row in rows]
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        conn.close()
+    return jsonify(data)
+
+
 if __name__ == '__main__':
     # Run your Flask application in debug mode during development
     app.run(debug=True)
