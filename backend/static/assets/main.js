@@ -11,27 +11,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // 2. Fetch and render transactions data
-  fetch("/api/transactions")
-    .then((response) => response.json())
-    .then((data) => {
-      const tableBody = document.querySelector("#transactions-table tbody");
-      if (tableBody && Array.isArray(data)) {
-        data.forEach((txn) => {
-          const row = document.createElement("tr");
-          row.innerHTML = `
-                <td>${txn.order_id}</td>
-                <td>${txn.line_item_id}</td>
-                <td>${txn.transaction_type}</td>
-                <td>${txn.transaction_date}</td>
-                <td>${txn.amount_value}</td>
-              `;
-          tableBody.appendChild(row);
-        });
-      }
-    })
-    .catch((error) => console.error("Error fetching transactions:", error));
-
   // 3. Fetch and render sold items data
   fetch("/api/sold-items")
     .then((response) => response.json())
@@ -41,10 +20,14 @@ document.addEventListener("DOMContentLoaded", () => {
         data.forEach((item) => {
           const row = document.createElement("tr");
           row.innerHTML = `
-                <td>${item.order_id}</td>
                 <td>${item.item_title}</td>
                 <td>${item.sold_date}</td>
+                <td>${item.item_cost}</td>
                 <td>${item.sold_for_price}</td>
+                <td>${item.net_profit_margin}</td>
+                <td>${item.roi}</td>
+                <td>${item.time_to_sell}</td>
+                <td>${item.purchased_at}</td>
               `;
           tableBody.appendChild(row);
         });
