@@ -237,13 +237,25 @@ def get_transactions_data(cursor, access_token):
 
         # Other transaction types
         if txn_type == "SHIPPING_LABEL":
-            shipping_label_amount = amount_value
+            try:
+                shipping_label_amount = float(amount_value)
+            except Exception:
+                shipping_label_amount = 0.0
         elif txn_type == "REFUND":
-            refund_amount = amount_value
+            try:
+                refund_amount = float(amount_value)
+            except Exception:
+                refund_amount = 0.0
         elif txn_type == "DISPUTE":
-            dispute_amount = amount_value
+            try:
+                dispute_amount = float(amount_value)
+            except Exception:
+                dispute_amount = 0.0
         elif txn_type == "CREDIT":
-            credit_amount = amount_value
+            try:
+                credit_amount = float(amount_value)
+            except Exception:
+                credit_amount = 0.0
 
         cursor.execute('''
             INSERT OR REPLACE INTO transactions (
