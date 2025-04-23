@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Tally-O Sold Items</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='assets/styles.css') }}"
+    />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="header-left">
+        <nav>
+          <button onclick="window.location.href='/'">Home</button>
+          <button onclick="window.location.href='/inventory'">Inventory</button>
+          <button onclick="window.location.href='/sold'">Sold</button>
+          <button onclick="window.location.href='/insights'">Insights</button>
+        </nav>
+        <h1>Tally-O: Sold Items</h1>
+      </div>
+      <div class="header-right">
+        <!-- Moved login button here -->
+        <button id="login-btn">Login with eBay</button>
+      </div>
+    </header>
+    <main>
+      <!-- Sold Items Section -->
+      <section>
+        <h2>Sold Items</h2>
+        <table id="sold-items-table">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Sold Date</th>
+              <th>Cost</th>
+              <th>Sold For</th>
+              <th>Net Sales</th>
+              <th>ROI</th>
+              <th>Time To Sell</th>
+              <th>Purchased At</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Rows will be injected here by main.js -->
+          </tbody>
+        </table>
+      </section>
+    </main>
+
+    <script src="{{ url_for('static', filename='assets/main.js') }}"></script>
+  </body>
+</html>

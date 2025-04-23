@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Tally-O Insights</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='assets/styles.css') }}"
+    />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="header-left">
+        <nav>
+          <button onclick="window.location.href='/'">Home</button>
+          <button onclick="window.location.href='/inventory'">Inventory</button>
+          <button onclick="window.location.href='/sold'">Sold</button>
+          <button onclick="window.location.href='/insights'">Insights</button>
+        </nav>
+        <h1>Tally-O: Insights</h1>
+      </div>
+      <div class="header-right">
+        <button id="login-btn">Login with eBay</button>
+      </div>
+    </header>
+    <main>
+      <section></section>
+    </main>
+
+    <script src="{{ url_for('static', filename='assets/main.js') }}"></script>
+  </body>
+</html>
