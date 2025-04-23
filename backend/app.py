@@ -459,7 +459,7 @@ def api_sold_items():
     try:
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
-        cursor.execute("SELECT * FROM sold_items")
+        cursor.execute("SELECT * FROM sold_items ORDER BY sold_date DESC")
         rows = cursor.fetchall()
         columns = [column[0] for column in cursor.description]
         data = [dict(zip(columns, row)) for row in rows]
