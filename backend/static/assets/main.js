@@ -28,6 +28,7 @@ document.addEventListener("DOMContentLoaded", () => {
           // Visible columns only
           row.innerHTML = `
                 <td>${item.item_title}</td>
+                <td>${item.fixed_final_fee}</td>
                 <td>${item.sold_date}</td>
                 <td contenteditable="true" data-field="item_cost">${item.item_cost}</td>
                 <td data-field="sold_for_price">${item.sold_for_price}</td>
