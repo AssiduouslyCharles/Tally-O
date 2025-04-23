@@ -164,106 +164,99 @@ def insights():
 
 def get_transactions_data(cursor, access_token):
     """
-    Retrieve transactions from the eBay Finances API and insert the records 
-    into the 'transactions' table. (Table schema is managed separately via schema.sq)
+    Retrieve transactions from the eBay Finances API and insert into 'transactions'.
     """
     EBAY_API_URL = "https://apiz.ebay.com/sell/finances/v1/transaction"
     headers = {
         "Authorization": f"Bearer {access_token}",
         "Content-Type": "application/json",
-        "Accept": "application/json"
+        "Accept": "application/json",
+        # Required for all Finances calls outside US; defaults to EBAY_US if omitted :contentReference[oaicite:0]{index=0}
+        "X-EBAY-C-MARKETPLACE-ID": "EBAY_US",
     }
+
     limit = 1000
     offset = 0
-    params = {
-        "transaction_type": "ALL",
-        "limit": limit,
-        "offset": offset
-    }
     all_transactions = []
+
     while True:
-        params["offset"] = offset
+        params = {"limit": limit, "offset": offset}
         response = requests.get(EBAY_API_URL, headers=headers, params=params)
+
+        # 204 means “no content” → we’re done
+        if response.status_code == 204:
+            break
+
+        # Anything other than 200 is an error
         if response.status_code != 200:
-            print("Error retrieving transactions:", response.status_code, response.text)
-            break
+            raise RuntimeError(
+                f"eBay getTransactions failed ({response.status_code}): "
+                f"{response.text}"
+            )
+
         data = response.json()
-        transactions = data.get("transactions", [])
-        if not transactions:
+        txns = data.get("transactions", [])
+        if not txns:
             break
-        all_transactions.extend(transactions)
+
+        all_transactions.extend(txns)
         offset += limit
 
+    # If you want a quick debug, you can log how many you fetched:
+    print(f"Fetched {len(all_transactions)} transactions")
+
+    # Insert into SQLite as before...
     for txn in all_transactions:
-        order_id = txn.get("orderId", "N/A")
-        line_item_id = txn.get("orderLineItems", [{}])[0].get("lineItemId", "")
-        txn_type = txn.get("transactionType", "").upper()
-        txn_date = txn.get("transactionDate", "")
-        try:
-            amount_value = float(txn.get("amount", {}).get("value", "0"))
-        except Exception:
-            amount_value = 0.0
+        order_id         = txn.get("orderId", "N/A")
+        line_item_id     = txn.get("orderLineItems", [{}])[0].get("lineItemId", "")
+        txn_type         = txn.get("transactionType", "").upper()
+        txn_date         = txn.get("transactionDate", "")
+        amount_value     = float(txn.get("amount", {}).get("value", 0.0))
 
-        sale_final_fee = sale_fixed_fee = sale_international_fee = 0.0
-        shipping_label_amount = 0.0
-        refund_amount = refund_final_fee = refund_fixed_fee = 0.0
-        dispute_amount = 0.0
-        credit_amount = 0.0
+        # Initialize fee buckets
+        sale_final_fee           = sale_fixed_fee           = sale_international_fee = 0.0
+        refund_final_fee         = refund_fixed_fee         = 0.0
+        shipping_label_amount    = refund_amount           = dispute_amount = credit_amount = 0.0
 
-        fees = txn.get("orderLineItems", [{}])[0].get("marketplaceFees", [])
-        for fee in fees:
+        # Parse marketplaceFees into the right buckets
+        for fee in txn.get("orderLineItems", [{}])[0].get("marketplaceFees", []):
             fee_type = fee.get("feeType", "")
-            fee_amount = fee.get("amount", {}).get("value", "0")
-            try:
-                fee_amount = float(fee_amount)
-            except Exception:
-                fee_amount = 0.0
+            fee_amt  = float(fee.get("amount", {}).get("value", 0.0))
             if txn_type == "SALE":
                 if fee_type == "FINAL_VALUE_FEE":
-                    sale_final_fee = fee_amount
+                    sale_final_fee = fee_amt
                 elif fee_type == "FINAL_VALUE_FEE_FIXED_PER_ORDER":
-                    sale_fixed_fee = fee_amount
+                    sale_fixed_fee = fee_amt
                 elif fee_type == "INTERNATIONAL_FEE":
-                    sale_international_fee = fee_amount
+                    sale_international_fee = fee_amt
             elif txn_type == "REFUND":
                 if fee_type == "FINAL_VALUE_FEE":
-                    refund_final_fee = fee_amount
+                    refund_final_fee = fee_amt
                 elif fee_type == "FINAL_VALUE_FEE_FIXED_PER_ORDER":
-                    refund_fixed_fee = fee_amount
+                    refund_fixed_fee = fee_amt
 
+        # Other transaction types
         if txn_type == "SHIPPING_LABEL":
-            try:
-                shipping_label_amount = float(amount_value)
-            except Exception:
-                shipping_label_amount = 0.0
+            shipping_label_amount = amount_value
         elif txn_type == "REFUND":
-            try:
-                refund_amount = float(amount_value)
-            except Exception:
-                refund_amount = 0.0
+            refund_amount = amount_value
         elif txn_type == "DISPUTE":
-            try:
-                dispute_amount = float(amount_value)
-            except Exception:
-                dispute_amount = 0.0
+            dispute_amount = amount_value
         elif txn_type == "CREDIT":
-            try:
-                credit_amount = float(amount_value)
-            except Exception:
-                credit_amount = 0.0
+            credit_amount = amount_value
 
         cursor.execute('''
             INSERT OR REPLACE INTO transactions (
-                order_id, line_item_id, transaction_type, transaction_date, amount_value,
-                sale_final_fee, sale_fixed_fee, sale_international_fee,
-                shipping_label_amount, refund_amount, refund_final_fee, refund_fixed_fee,
-                dispute_amount, credit_amount
+                order_id, line_item_id, transaction_type, transaction_date,
+                amount_value, sale_final_fee, sale_fixed_fee,
+                sale_international_fee, shipping_label_amount, refund_amount,
+                refund_final_fee, refund_fixed_fee, dispute_amount, credit_amount
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (
             order_id, line_item_id, txn_type, txn_date, amount_value,
             sale_final_fee, sale_fixed_fee, sale_international_fee,
-            shipping_label_amount, refund_amount, refund_final_fee, refund_fixed_fee,
-            dispute_amount, credit_amount
+            shipping_label_amount, refund_amount, refund_final_fee,
+            refund_fixed_fee, dispute_amount, credit_amount
         ))
     print("Transactions data inserted into the database.")
 
