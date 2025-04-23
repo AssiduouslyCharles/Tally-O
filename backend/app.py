@@ -142,22 +142,22 @@ def dashboard():
     
     # Render the dashboard page with the token. Adjust your dashboard.html accordingly.
     return render_template('dashboard.html', token=access_token)
-'''
+
 @app.route('/inventory')
 def inventory():
     # In a real app, you’d fetch inventory data here
     return render_template('inventory.html')
 
 @app.route('/sold')
-def inventory():
+def sold():
     # In a real app, you’d fetch inventory data here
     return render_template('sold.html')
 
 @app.route('/insights')
-def inventory():
+def insights():
     # In a real app, you’d fetch inventory data here
     return render_template('insights.html')
-'''
+
 ###################################
 # Helper Functions for Proxying   #
 ###################################
