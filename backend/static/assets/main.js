@@ -25,7 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
           row.dataset.costToShip = item.cost_to_ship;
           row.dataset.shippingPaid = item.shipping_paid;
           row.dataset.netProfitMargin = item.net_profit_margin;
-          // Visible columns only
+          // Visible columns only (testing pull)
           row.innerHTML = `
                 <td>${item.item_title}</td>
                 <td>${item.sold_date}</td>
