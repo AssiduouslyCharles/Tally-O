@@ -21,10 +21,13 @@ header .header-left {
   align-items: center;
 }
 
+header .header-left h1 {
+  margin: 20px;
+}
+
 /* space out the nav buttons a bit */
 header .header-left nav button {
   margin-left: 10px;
-  margin-right: 10px;
 }
 
 /*header .header-right {
