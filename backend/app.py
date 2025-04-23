@@ -473,7 +473,7 @@ def api_sold_items():
 def update_sold_item(order_id):
     data = request.get_json() or {}
     allowed_fields = {
-        "item_cost", "purchased_at"
+        "item_cost", "purchased_at", "net_return", "roi", "net_profit_margin"
         # add any other fields you want editable
     }
     updates = {k: data[k] for k in data if k in allowed_fields}
