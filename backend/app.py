@@ -219,7 +219,7 @@ def get_transactions_data(cursor, access_token):
         shipping_label_amount    = refund_amount           = dispute_amount = credit_amount = 0.0
 
         # Parse marketplaceFees into the right buckets
-        for fee in txn.get("orderLineItems", [{}])[0].get("marketplaceFees", []):
+        for fee in txn.get("orderID", [{}])[0].get("marketplaceFees", []):
             fee_type = fee.get("feeType", "")
             fee_amt  = float(fee.get("amount", {}).get("value", 0.0))
             if txn_type == "SALE":
@@ -237,25 +237,13 @@ def get_transactions_data(cursor, access_token):
 
         # Other transaction types
         if txn_type == "SHIPPING_LABEL":
-            try:
-                shipping_label_amount = float(amount_value)
-            except Exception:
-                shipping_label_amount = 0.0
+            shipping_label_amount = amount_value
         elif txn_type == "REFUND":
-            try:
-                refund_amount = float(amount_value)
-            except Exception:
-                refund_amount = 0.0
+            refund_amount = amount_value
         elif txn_type == "DISPUTE":
-            try:
-                dispute_amount = float(amount_value)
-            except Exception:
-                dispute_amount = 0.0
+            dispute_amount = amount_value
         elif txn_type == "CREDIT":
-            try:
-                credit_amount = float(amount_value)
-            except Exception:
-                credit_amount = 0.0
+            credit_amount = amount_value
 
         cursor.execute('''
             INSERT OR REPLACE INTO transactions (
