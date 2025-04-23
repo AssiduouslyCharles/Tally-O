@@ -469,6 +469,29 @@ def api_sold_items():
         conn.close()
     return jsonify(data)
 
+@app.route('/api/sold-items/<order_id>', methods=['PATCH'])
+def update_sold_item(order_id):
+    data = request.get_json() or {}
+    allowed_fields = {
+        "item_cost", "purchased_at"
+        # add any other fields you want editable
+    }
+    updates = {k: data[k] for k in data if k in allowed_fields}
+    if not updates:
+        return jsonify({"error": "No valid fields to update"}), 400
+
+    set_clause = ", ".join(f"{field}=?" for field in updates)
+    values = list(updates.values()) + [order_id]
+
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute(
+        f"UPDATE sold_items SET {set_clause} WHERE order_id=?",
+        values
+    )
+    conn.commit()
+    conn.close()
+    return jsonify({"status": "updated"})
 
 if __name__ == '__main__':
     # Run your Flask application in debug mode during development
