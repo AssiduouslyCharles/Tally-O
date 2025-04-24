@@ -16,39 +16,53 @@ document.addEventListener("DOMContentLoaded", () => {
       const tableBody = document.querySelector("#sold-items-table tbody");
       if (tableBody && Array.isArray(data)) {
         data.forEach((item) => {
+          // 1. Format sold_date
+          const soldDateFormatted = item.sold_date
+            ? new Date(item.sold_date).toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })
+            : "";
+
           const row = document.createElement("tr");
-          row.dataset.orderId = item.order_id; // Store order ID in the row for future reference
-          // Stash hidden fields on the row
+          row.dataset.orderId = item.order_id;
           row.dataset.finalFee = item.final_fee;
           row.dataset.fixedFinalFee = item.fixed_final_fee;
           row.dataset.internationalFee = item.international_fee;
           row.dataset.costToShip = item.cost_to_ship;
           row.dataset.shippingPaid = item.shipping_paid;
           row.dataset.netProfitMargin = item.net_profit_margin;
-          // Visible columns only (testing pull)
+
           row.innerHTML = `
-                <td>${item.item_title}</td>
-                <td>${item.sold_date}</td>
-                <td contenteditable="true" data-field="item_cost">${
-                  item.item_cost != null ? "$" + item.item_cost : ""
-                }</td>
-                <td data-field="sold_for_price">$${item.sold_for_price}</td>
-                <td data-field="net_return">${
-                  item.net_return != null ? "$" + item.net_return : ""
-                }</td>
-                <td data-field="roi">${
-                  item.roi != null ? Math.round(item.roi) + "%" : ""
-                }</td>
-                <td data-field="net_profit_margin">${
-                  item.net_profit_margin != null
-                    ? Math.round(item.net_profit_margin) + "%"
-                    : ""
-                }</td>
-                <td>${item.time_to_sell} Days</td>
-                <td contenteditable="true" data-field="purchased_at">${
-                  item.purchased_at ?? ""
-                }</td>
-              `;
+          <td>${item.item_title ?? ""}</td>
+          <td>${soldDateFormatted}</td>
+          <td contenteditable="true" data-field="item_cost">
+            ${item.item_cost != null ? "$" + item.item_cost : ""}
+          </td>
+          <td data-field="sold_for_price">
+            ${item.sold_for_price != null ? "$" + item.sold_for_price : ""}
+          </td>
+          <td data-field="net_return">
+            ${item.net_return != null ? "$" + item.net_return : ""}
+          </td>
+          <td data-field="roi">
+            ${item.roi != null ? Math.round(item.roi) + "%" : ""}
+          </td>
+          <td data-field="net_profit_margin">
+            ${
+              item.net_profit_margin != null
+                ? Math.round(item.net_profit_margin) + "%"
+                : ""
+            }
+          </td>
+          <td>
+            ${item.time_to_sell != null ? item.time_to_sell + " Days" : ""}
+          </td>
+          <td contenteditable="true" data-field="purchased_at">
+            ${item.purchased_at ?? ""}
+          </td>
+        `;
           tableBody.appendChild(row);
         });
         // 3. Attach blur event listeners to editable cells
