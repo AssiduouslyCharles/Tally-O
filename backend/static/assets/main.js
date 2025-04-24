@@ -29,15 +29,21 @@ document.addEventListener("DOMContentLoaded", () => {
           row.innerHTML = `
                 <td>${item.item_title}</td>
                 <td>${item.sold_date}</td>
-                <td contenteditable="true" data-field="item_cost">$${
-                  item.item_cost
+                <td contenteditable="true" data-field="item_cost">${
+                  item.item_cost != null ? "$" + item.item_cost : ""
                 }</td>
                 <td data-field="sold_for_price">$${item.sold_for_price}</td>
-                <td data-field="net_return">$${item.net_return}</td>
-                <td data-field="roi">${Math.round(item.roi)}%</td>
-                <td data-field="net_profit_margin">${Math.round(
-                  item.net_profit_margin
-                )}%</td>
+                <td data-field="net_return">${
+                  item.net_return != null ? "$" + item.net_return : ""
+                }</td>
+                <td data-field="roi">${
+                  item.roi != null ? Math.round(item.roi) + "%" : ""
+                }</td>
+                <td data-field="net_profit_margin">${
+                  item.net_profit_margin != null
+                    ? Math.round(item.net_profit_margin) + "%"
+                    : ""
+                }</td>
                 <td>${item.time_to_sell} Days</td>
                 <td contenteditable="true" data-field="purchased_at">${
                   item.purchased_at ?? ""
