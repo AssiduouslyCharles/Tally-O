@@ -46,82 +46,89 @@ document.addEventListener("DOMContentLoaded", () => {
               console.log(
                 "🟢 blur fired for",
                 e.target.dataset.field,
-                "row:",
+                "order:",
                 e.target.closest("tr").dataset.orderId
               );
-              const td = e.target;
-              const newValue = td.innerText.trim();
-              const field = td.dataset.field;
-              const row = td.closest("tr");
-              const orderId = row.dataset.orderId;
 
-              // Prepare payload
-              const updates = {};
-
-              if (field === "item_cost") {
-                // Parse values for recalculation
-                const soldFor =
-                  parseFloat(
-                    row.querySelector('td[data-field="sold_for_price"]')
-                      .innerText
-                  ) || 0;
-                const shippingPaid = parseFloat(row.dataset.shippingPaid) || 0;
-                const finalFee = parseFloat(row.dataset.finalFee) || 0;
-                const fixedFinalFee =
-                  parseFloat(row.dataset.fixedFinalFee) || 0;
-                const internationalFee =
-                  parseFloat(row.dataset.internationalFee) || 0;
-                const costToShip = parseFloat(row.dataset.costToShip) || 0;
-                const itemCost = parseFloat(newValue) || 0;
-
-                // Recalculate
-                const netReturn =
-                  soldFor +
-                  shippingPaid -
-                  (finalFee +
-                    fixedFinalFee +
-                    internationalFee +
-                    costToShip +
-                    itemCost);
-                const roi = itemCost > 0 ? (netReturn / itemCost) * 100 : 0;
-                const netProfitMargin =
-                  soldFor + shippingPaid > 0
-                    ? (netReturn / (soldFor + shippingPaid)) * 100
-                    : 0;
-
-                // Update UI
-                row.querySelector('td[data-field="net_return"]').innerText =
-                  netReturn.toFixed(2);
-                row.querySelector('td[data-field="roi"]').innerText =
-                  roi.toFixed(2);
-                row.querySelector(
-                  'td[data-field="net_profit_margin"]'
-                ).innerText = netProfitMargin.toFixed(2);
-
-                // Build updates payload
-                updates.item_cost = itemCost;
-                updates.net_return = netReturn;
-                updates.roi = roi;
-                updates.net_profit_margin = netProfitMargin;
-              } else {
-                // Only updated non-cost fields (e.g. purchased_at)
-                updates[field] = newValue;
-              }
-
-              // Send patch request
+              // Wrap the entire body in try/catch
               try {
+                const td = e.target;
+                const newValue = td.innerText.trim();
+                const field = td.dataset.field;
+                const row = td.closest("tr");
+                const orderId = row.dataset.orderId;
+
+                // Prepare payload
+                const updates = {};
+
+                if (field === "item_cost") {
+                  // Parse values for recalculation
+                  const soldFor =
+                    parseFloat(
+                      row.querySelector('td[data-field="sold_for_price"]')
+                        .innerText
+                    ) || 0;
+                  const shippingPaid =
+                    parseFloat(row.dataset.shippingPaid) || 0;
+                  const finalFee = parseFloat(row.dataset.finalFee) || 0;
+                  const fixedFinalFee =
+                    parseFloat(row.dataset.fixedFinalFee) || 0;
+                  const international =
+                    parseFloat(row.dataset.internationalFee) || 0;
+                  const costToShip = parseFloat(row.dataset.costToShip) || 0;
+                  const itemCost = parseFloat(newValue) || 0;
+
+                  // Recalculate
+                  const netReturn =
+                    soldFor +
+                    shippingPaid -
+                    (finalFee +
+                      fixedFinalFee +
+                      international +
+                      costToShip +
+                      itemCost);
+                  const roi = itemCost > 0 ? (netReturn / itemCost) * 100 : 0;
+                  const netProfitMargin =
+                    soldFor + shippingPaid > 0
+                      ? (netReturn / (soldFor + shippingPaid)) * 100
+                      : 0;
+
+                  // Update UI
+                  row.querySelector('td[data-field="net_return"]').innerText =
+                    netReturn.toFixed(2);
+                  row.querySelector('td[data-field="roi"]').innerText =
+                    roi.toFixed(2);
+                  row.querySelector(
+                    'td[data-field="net_profit_margin"]'
+                  ).innerText = netProfitMargin.toFixed(2);
+
+                  // Build updates payload
+                  updates.item_cost = itemCost;
+                  updates.net_return = netReturn;
+                  updates.roi = roi;
+                  updates.net_profit_margin = netProfitMargin;
+                } else {
+                  updates[field] = newValue;
+                }
+
+                console.log(
+                  "🔵 About to PATCH /api/sold-items/" + orderId,
+                  updates
+                );
+
+                // Now this should definitely execute
                 const res = await fetch(`/api/sold-items/${orderId}`, {
                   method: "PATCH",
-                  headers: {
-                    "Content-Type": "application/json",
-                  },
+                  headers: { "Content-Type": "application/json" },
                   body: JSON.stringify(updates),
                 });
+
+                console.log("🔵 PATCH response status:", res.status);
                 if (!res.ok) {
-                  console.error("Update failed:", await res.text());
+                  console.error("🔴 Update failed:", await res.text());
                 }
               } catch (err) {
-                console.error("Error updating field:", err);
+                console.error("🛑 Error in blur handler:", err);
               }
             });
           });
