@@ -363,8 +363,6 @@ def get_sold_list_data(cursor, access_token):
             time_to_sell = (sold_dt - list_dt).days
         else:
             time_to_sell = None
-        item_cost = None
-        purchased_at = None
         sku = item.find("SKU").text if item and item.find("SKU") else None
         quant_sold = item.find("QuantitySold").text if item and item.find("QuantitySold") else None
         sold_for_price = transaction.find("TransactionPrice").text if transaction.find("TransactionPrice") else None
@@ -374,27 +372,46 @@ def get_sold_list_data(cursor, access_token):
         final_fee = None
         international_fee = None
         cost_to_ship = None
-        net_return = None
-        roi = None
-        net_profit_margin = None
         refund_to_buyer = None
         refund_owed = None
         refund_to_seller = None
         
-        cursor.execute('''
-            INSERT OR REPLACE INTO sold_items (
-                order_id, transaction_id, item_id, item_title, photo_url, list_date, sold_date,
-                time_to_sell, item_cost, purchased_at, sku, quantity_sold, sold_for_price,
-                shipping_paid, final_fee, fixed_final_fee, international_fee, cost_to_ship,
-                net_return, roi, net_profit_margin, refund_to_buyer, refund_owed, refund_to_seller
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (
-            order_id, transaction_id, item_id, item_title, photo_url, list_date, sold_date,
-            time_to_sell, item_cost, purchased_at, sku, quant_sold, sold_for_price,
-            shipping_paid, final_fee, fixed_final_fee, international_fee, cost_to_ship,
-            net_return, roi, net_profit_margin, refund_to_buyer, refund_owed, refund_to_seller
+        cursor.execute("""
+        INSERT INTO sold_items (
+          order_id, transaction_id, item_id, item_title, photo_url,
+          list_date, sold_date, time_to_sell, sku, quantity_sold,
+          sold_for_price, shipping_paid, final_fee, fixed_final_fee,
+          international_fee, cost_to_ship, refund_to_buyer,
+          refund_owed, refund_to_seller
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(order_id, transaction_id) DO UPDATE SET
+          item_id            = excluded.item_id,
+          item_title         = excluded.item_title,
+          photo_url          = excluded.photo_url,
+          list_date          = excluded.list_date,
+          sold_date          = excluded.sold_date,
+          time_to_sell       = excluded.time_to_sell,
+          sku                = excluded.sku,
+          quantity_sold      = excluded.quantity_sold,
+          sold_for_price     = excluded.sold_for_price,
+          shipping_paid      = excluded.shipping_paid,
+          final_fee          = excluded.final_fee,
+          fixed_final_fee    = excluded.fixed_final_fee,
+          international_fee  = excluded.international_fee,
+          cost_to_ship       = excluded.cost_to_ship,
+          refund_to_buyer    = excluded.refund_to_buyer,
+          refund_owed        = excluded.refund_owed,
+          refund_to_seller   = excluded.refund_to_seller;
+        """, (
+          order_id, transaction_id, item_id, item_title, photo_url,
+          list_date, sold_date, time_to_sell, sku, quant_sold,
+          sold_for_price, shipping_paid, final_fee, fixed_final_fee,
+          international_fee, cost_to_ship, refund_to_buyer,
+          refund_owed, refund_to_seller
         ))
-    print("Sold items data inserted into the database.")
+    
+    cursor.connection.commit()
+    print("Sold items data upserted (manual fields preserved).")
 
 def update_sold_data(cursor):
     """
