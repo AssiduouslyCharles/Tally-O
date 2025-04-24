@@ -40,7 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 )}%</td>
                 <td>${item.time_to_sell} Days</td>
                 <td contenteditable="true" data-field="purchased_at">${
-                  item.purchased_at
+                  item.purchased_at ?? ""
                 }</td>
               `;
           tableBody.appendChild(row);
