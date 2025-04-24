@@ -43,6 +43,12 @@ document.addEventListener("DOMContentLoaded", () => {
           .querySelectorAll('td[contenteditable="true"]')
           .forEach((cell) => {
             cell.addEventListener("blur", async (e) => {
+              console.log(
+                "🟢 blur fired for",
+                e.target.dataset.field,
+                "row:",
+                e.target.closest("tr").dataset.orderId
+              );
               const td = e.target;
               const newValue = td.innerText.trim();
               const field = td.dataset.field;
