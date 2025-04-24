@@ -33,6 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <td data-field="sold_for_price">${item.sold_for_price}</td>
                 <td data-field="net_return">${item.net_return}</td>
                 <td data-field="roi">${item.roi}</td>
+                <td data-field="net_profit_margin">${item.net_profit_margin}</td>
                 <td>${item.time_to_sell}</td>
                 <td contenteditable="true" data-field="purchased_at">${item.purchased_at}</td>
               `;
