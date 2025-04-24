@@ -35,9 +35,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 <td data-field="sold_for_price">$${item.sold_for_price}</td>
                 <td data-field="net_return">$${item.net_return}</td>
                 <td data-field="roi">${Math.round(item.roi)}%</td>
-                <td data-field="net_profit_margin">${
+                <td data-field="net_profit_margin">${Math.round(
                   item.net_profit_margin
-                }%</td>
+                )}%</td>
                 <td>${item.time_to_sell} Days</td>
                 <td contenteditable="true" data-field="purchased_at">${
                   item.purchased_at
