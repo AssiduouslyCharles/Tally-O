@@ -164,101 +164,146 @@ def insights():
 
 def get_transactions_data(cursor, access_token):
     """
-    Retrieve transactions from the eBay Finances API and insert into 'transactions'.
+    Retrieve transactions from the eBay Finances API,
+    group them by order (one value per txn type),
+    and insert into SQLite table 'transactions_grouped'.
     """
     EBAY_API_URL = "https://apiz.ebay.com/sell/finances/v1/transaction"
     headers = {
         "Authorization": f"Bearer {access_token}",
         "Content-Type": "application/json",
         "Accept": "application/json",
-        # Required for all Finances calls outside US; defaults to EBAY_US if omitted :contentReference[oaicite:0]{index=0}
         "X-EBAY-C-MARKETPLACE-ID": "EBAY_US",
     }
 
-    limit = 1000
-    offset = 0
-    all_transactions = []
-
+    # 1) Fetch all transactions
+    limit, offset = 1000, 0
+    all_txns = []
     while True:
-        params = {"limit": limit, "offset": offset}
-        response = requests.get(EBAY_API_URL, headers=headers, params=params)
-
-        # 204 means “no content” → we’re done
-        if response.status_code == 204:
+        params = {"transaction_type": "ALL", "limit": limit, "offset": offset}
+        resp = requests.get(EBAY_API_URL, headers=headers, params=params)
+        if resp.status_code == 204:
             break
-
-        # Anything other than 200 is an error
-        if response.status_code != 200:
-            raise RuntimeError(
-                f"eBay getTransactions failed ({response.status_code}): "
-                f"{response.text}"
-            )
-
-        data = response.json()
-        txns = data.get("transactions", [])
-        if not txns:
+        if resp.status_code != 200:
+            raise RuntimeError(f"eBay getTransactions failed ({resp.status_code}): {resp.text}")
+        page = resp.json().get("transactions", [])
+        if not page:
             break
-
-        all_transactions.extend(txns)
+        all_txns.extend(page)
         offset += limit
 
-    # If you want a quick debug, you can log how many you fetched:
-    print(f"Fetched {len(all_transactions)} transactions")
+    print(f"Fetched {len(all_txns)} transactions")
 
-    # Insert into SQLite as before...
-    for txn in all_transactions:
-        order_id         = txn.get("orderId", "N/A")
-        line_item_id     = txn.get("orderLineItems", [{}])[0].get("lineItemId", "")
-        txn_type         = txn.get("transactionType", "").upper()
-        txn_date         = txn.get("transactionDate", "")
-        amount_value     = float(txn.get("amount", {}).get("value", 0.0))
+    # 2) Group by orderId, but only keep the first value seen per type
+    orders = {}
+    for txn in all_txns:
+        oid = txn.get("orderId", "N/A")
+        grp = orders.setdefault(oid, {
+            "line_item_id":             None,
+            "sale_amount":              None,
+            "sale_date":                None,
+            "sale_final_fee":           None,
+            "sale_fixed_fee":           None,
+            "sale_intl_fee":            None,
+            "shipping_label_amount":    0.0,
+            "refund_amount":            None,
+            "refund_final_fee":         None,
+            "refund_fixed_fee":         None,
+            "dispute_amount":           None,
+            "credit_amount":            None,
+        })
 
-        # Initialize fee buckets
-        sale_final_fee           = sale_fixed_fee           = sale_international_fee = 0.0
-        refund_final_fee         = refund_fixed_fee         = 0.0
-        shipping_label_amount    = refund_amount           = dispute_amount = credit_amount = 0.0
+        ttype = txn.get("transactionType", "").upper()
+        date  = txn.get("transactionDate", "")
+        amt   = float(txn.get("amount", {}).get("value", 0.0))
+        li    = txn.get("orderLineItems", [{}])[0].get("lineItemId", None)
+        fees  = txn.get("orderLineItems", [{}])[0].get("marketplaceFees", [])
 
-        # Parse marketplaceFees into the right buckets
-        for fee in txn.get("orderID", [{}])[0].get("marketplaceFees", []):
-            fee_type = fee.get("feeType", "")
-            fee_amt  = float(fee.get("amount", {}).get("value", 0.0))
-            if txn_type == "SALE":
-                if fee_type == "FINAL_VALUE_FEE":
-                    sale_final_fee = fee_amt
-                elif fee_type == "FINAL_VALUE_FEE_FIXED_PER_ORDER":
-                    sale_fixed_fee = fee_amt
-                elif fee_type == "INTERNATIONAL_FEE":
-                    sale_international_fee = fee_amt
-            elif txn_type == "REFUND":
-                if fee_type == "FINAL_VALUE_FEE":
-                    refund_final_fee = fee_amt
-                elif fee_type == "FINAL_VALUE_FEE_FIXED_PER_ORDER":
-                    refund_fixed_fee = fee_amt
+        # SALE: capture *one* line_item_id, amount, date, and fees
+        if ttype == "SALE" and grp["sale_amount"] is None:
+            grp["line_item_id"]   = li
+            grp["sale_amount"]    = amt
+            grp["sale_date"]      = date
+            for f in fees:
+                ftype = f.get("feeType", "")
+                fval  = float(f.get("amount", {}).get("value", 0.0))
+                if   ftype == "FINAL_VALUE_FEE":
+                    grp["sale_final_fee"] = fval
+                elif ftype == "FINAL_VALUE_FEE_FIXED_PER_ORDER":
+                    grp["sale_fixed_fee"] = fval
+                elif ftype == "INTERNATIONAL_FEE":
+                    grp["sale_intl_fee"]  = fval
 
-        # Other transaction types
-        if txn_type == "SHIPPING_LABEL":
-            shipping_label_amount = amount_value
-        elif txn_type == "REFUND":
-            refund_amount = amount_value
-        elif txn_type == "DISPUTE":
-            dispute_amount = amount_value
-        elif txn_type == "CREDIT":
-            credit_amount = amount_value
+        # SHIPPING_LABEL: sum them all
+        elif ttype == "SHIPPING_LABEL":
+            grp["shipping_label_amount"] += amt
 
-        cursor.execute('''
-            INSERT OR REPLACE INTO transactions (
-                order_id, line_item_id, transaction_type, transaction_date,
-                amount_value, sale_final_fee, sale_fixed_fee,
-                sale_international_fee, shipping_label_amount, refund_amount,
-                refund_final_fee, refund_fixed_fee, dispute_amount, credit_amount
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (
-            order_id, line_item_id, txn_type, txn_date, amount_value,
-            sale_final_fee, sale_fixed_fee, sale_international_fee,
-            shipping_label_amount, refund_amount, refund_final_fee,
-            refund_fixed_fee, dispute_amount, credit_amount
+        # REFUND: capture *one* refund amount + fees
+        elif ttype == "REFUND" and grp["refund_amount"] is None:
+            grp["refund_amount"] = amt
+            for f in fees:
+                ftype = f.get("feeType", "")
+                fval  = float(f.get("amount", {}).get("value", 0.0))
+                if   ftype == "FINAL_VALUE_FEE":
+                    grp["refund_final_fee"] = fval
+                elif ftype == "FINAL_VALUE_FEE_FIXED_PER_ORDER":
+                    grp["refund_fixed_fee"] = fval
+
+        # DISPUTE: capture *one* dispute
+        elif ttype == "DISPUTE" and grp["dispute_amount"] is None:
+            grp["dispute_amount"] = amt
+
+        # CREDIT: capture *one* credit
+        elif ttype == "CREDIT" and grp["credit_amount"] is None:
+            grp["credit_amount"] = amt
+
+    # 3) Create (if needed) the grouped table with REAL for numeric columns
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS transactions_grouped (
+        order_id                     TEXT    PRIMARY KEY,
+        line_item_id                 TEXT,
+        sale_amount                  REAL,
+        sale_transaction_date        TEXT,
+        sale_final_value_fee         REAL,
+        sale_fixed_final_value_fee   REAL,
+        sale_international_fee       REAL,
+        shipping_label_amount        REAL,
+        refund_amount                REAL,
+        refund_final_value_fee       REAL,
+        refund_fixed_final_value_fee REAL,
+        dispute_amount               REAL,
+        credit_amount                REAL
+    );
+    """)
+    cursor.execute("DELETE FROM transactions_grouped;")
+
+    # 4) Insert one row per order
+    for oid, grp in orders.items():
+        cursor.execute("""
+        INSERT OR REPLACE INTO transactions_grouped (
+           order_id, line_item_id, sale_amount, sale_transaction_date,
+           sale_final_value_fee, sale_fixed_final_value_fee, sale_international_fee,
+           shipping_label_amount, refund_amount, refund_final_value_fee,
+           refund_fixed_final_value_fee, dispute_amount, credit_amount
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            oid,
+            grp["line_item_id"],
+            grp["sale_amount"],
+            grp["sale_date"],
+            grp["sale_final_fee"],
+            grp["sale_fixed_fee"],
+            grp["sale_intl_fee"],
+            grp["shipping_label_amount"],
+            grp["refund_amount"],
+            grp["refund_final_fee"],
+            grp["refund_fixed_fee"],
+            grp["dispute_amount"],
+            grp["credit_amount"],
         ))
-    print("Transactions data inserted into the database.")
+    cursor.connection.commit()
+    print(f"Inserted {len(orders)} grouped orders into 'transactions_grouped'.")
+
 
 def get_sold_list_data(cursor, access_token):
     """
@@ -353,53 +398,51 @@ def get_sold_list_data(cursor, access_token):
 
 def update_sold_data(cursor):
     """
-    Update sold items data with financial details from transactions.
+    Update sold items data with financial details from transactions_grouped.
     """
     update_query = '''
-    UPDATE sold_items SET
+    UPDATE sold_items
+    SET
         final_fee = (
-            SELECT sale_final_fee
-            FROM transactions
-            WHERE transactions.line_item_id = sold_items.transaction_id
-              AND transactions.transaction_type = 'SALE'
+            SELECT tg.sale_final_value_fee
+            FROM transactions_grouped AS tg
+            WHERE tg.line_item_id = sold_items.transaction_id
         ),
         fixed_final_fee = (
-            SELECT sale_fixed_fee
-            FROM transactions
-            WHERE transactions.line_item_id = sold_items.transaction_id
-              AND transactions.transaction_type = 'SALE'
+            SELECT tg.sale_fixed_final_value_fee
+            FROM transactions_grouped AS tg
+            WHERE tg.line_item_id = sold_items.transaction_id
         ),
         international_fee = (
-            SELECT sale_international_fee
-            FROM transactions
-            WHERE transactions.line_item_id = sold_items.transaction_id
-              AND transactions.transaction_type = 'SALE'
+            SELECT tg.sale_international_fee
+            FROM transactions_grouped AS tg
+            WHERE tg.line_item_id = sold_items.transaction_id
         ),
         cost_to_ship = (
-            SELECT shipping_label_amount
-            FROM transactions
-            WHERE transactions.line_item_id = sold_items.transaction_id
-              AND transactions.transaction_type = 'SHIPPING_LABEL'
+            SELECT tg.shipping_label_amount
+            FROM transactions_grouped AS tg
+            WHERE tg.line_item_id = sold_items.transaction_id
         ),
         refund_owed = (
-            SELECT refund_amount
-            FROM transactions
-            WHERE transactions.line_item_id = sold_items.transaction_id
-              AND transactions.transaction_type = 'REFUND'
+            SELECT tg.refund_amount
+            FROM transactions_grouped AS tg
+            WHERE tg.line_item_id = sold_items.transaction_id
         ),
         refund_to_seller = (
-            SELECT (refund_final_fee + refund_fixed_fee)
-            FROM transactions
-            WHERE transactions.line_item_id = sold_items.transaction_id
-              AND transactions.transaction_type = 'REFUND'
+            SELECT (tg.refund_final_value_fee + tg.refund_fixed_final_value_fee)
+            FROM transactions_grouped AS tg
+            WHERE tg.line_item_id = sold_items.transaction_id
         )
     WHERE EXISTS (
-        SELECT 1 FROM transactions
-        WHERE transactions.line_item_id = sold_items.transaction_id
-    )
+        SELECT 1
+        FROM transactions_grouped AS tg
+        WHERE tg.line_item_id = sold_items.transaction_id
+    );
     '''
     cursor.execute(update_query)
-    print("Sold items updated with financial data from transactions.")
+    cursor.connection.commit()
+    print("Sold items updated with financial data from transactions_grouped.")
+
 
 ###################################
 # New Route to Update eBay Data   #

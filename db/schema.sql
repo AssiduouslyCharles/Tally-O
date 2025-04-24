@@ -47,3 +47,19 @@ CREATE TABLE IF NOT EXISTS sold_items (
     refund_owed REAL,
     refund_to_seller REAL
 );
+
+CREATE TABLE IF NOT EXISTS transactions_grouped (
+    order_id                     TEXT    PRIMARY KEY,
+    line_item_id                 TEXT,
+    sale_amount                  REAL,
+    sale_transaction_date        TEXT,
+    sale_final_value_fee         REAL,
+    sale_fixed_final_value_fee   REAL,
+    sale_international_fee       REAL,
+    shipping_label_amount        REAL,
+    refund_amount                REAL,
+    refund_final_value_fee       REAL,
+    refund_fixed_final_value_fee REAL,
+    dispute_amount               REAL,
+    credit_amount                REAL
+);
