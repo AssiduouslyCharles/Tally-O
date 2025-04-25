@@ -57,6 +57,9 @@ button:hover {
 #sold-items-table {
   width: 100%;
   border-collapse: collapse;
+  border: 2px solid #24690d;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 #sold-items-table .title-cell {
