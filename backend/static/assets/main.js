@@ -45,7 +45,11 @@ document.addEventListener("DOMContentLoaded", () => {
             ${item.sold_for_price != null ? "$" + item.sold_for_price : ""}
           </td>
           <td data-field="net_return">
-            ${item.net_return != null ? "$" + item.net_return : ""}
+            ${
+              item.net_return != null
+                ? "$" + parseFloat(item.net_return).toFixed(2)
+                : ""
+            }
           </td>
           <td data-field="roi">
             ${item.roi != null ? Math.round(item.roi) + "%" : ""}
