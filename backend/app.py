@@ -328,6 +328,8 @@ def get_sold_list_data(cursor, access_token):
     
     XML_PAYLOAD = f"""<?xml version="1.0" encoding="utf-8"?>
     <GetMyeBaySellingRequest xmlns="urn:ebay:apis:eBLBaseComponents">
+        <DetailLevel>ReturnAll</DetailLevel>
+        <OutputSelector>PictureDetails.GalleryURL</OutputSelector>
         <RequesterCredentials>
             <eBayAuthToken>{access_token}</eBayAuthToken>
         </RequesterCredentials>
@@ -354,7 +356,14 @@ def get_sold_list_data(cursor, access_token):
         transaction_id = transaction.find("TransactionID").text if transaction.find("TransactionID") else "N/A"
         item_id = item.find("ItemID").text if item and item.find("ItemID") else "N/A"
         item_title = item.find("Title").text if item and item.find("Title") else "N/A"
-        photo_url = item.find("GalleryURL").text if item and item.find("GalleryURL") else "N/A"
+        pic_url = None
+        pic_det = item.find("PictureDetails")
+        if pic_det:
+            gallery = pic_det.find("GalleryURL")
+            if gallery and gallery.text:
+                pic_url = gallery.text
+
+        photo_url = pic_url or "N/A"
         list_date = item.find("StartTime").text if item and item.find("StartTime") else "N/A"
         sold_date = item.find("EndTime").text if item and item.find("EndTime") else "N/A"
         if list_date != "N/A" and sold_date != "N/A":
