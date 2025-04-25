@@ -354,7 +354,7 @@ def get_sold_list_data(cursor, access_token):
         transaction_id = transaction.find("TransactionID").text if transaction.find("TransactionID") else "N/A"
         item_id = item.find("ItemID").text if item and item.find("ItemID") else "N/A"
         item_title = item.find("Title").text if item and item.find("Title") else "N/A"
-        photo_url = item.find("ViewItemURL").text if item and item.find("ViewItemURL") else "N/A"
+        photo_url = item.find("GalleryURL").text if item and item.find("GalleryURL") else "N/A"
         list_date = item.find("StartTime").text if item and item.find("StartTime") else "N/A"
         sold_date = item.find("EndTime").text if item and item.find("EndTime") else "N/A"
         if list_date != "N/A" and sold_date != "N/A":
