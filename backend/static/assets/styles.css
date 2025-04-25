@@ -60,12 +60,12 @@ button:hover {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0 20px;
+  padding: 0 10px;
   background: #ffffff; /* or a subtle gradient/background image */
 }
 
 .hero h2 {
-  font-size: 4rem; /* big text */
+  font-size: 5rem; /* big text */
   line-height: 1.2; /* allow wrapping */
   text-align: center; /* center lines */
   max-width: 800px; /* don’t let it stretch too wide */
