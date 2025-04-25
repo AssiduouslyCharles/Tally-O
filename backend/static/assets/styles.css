@@ -68,7 +68,7 @@ button:hover {
   font-size: 5rem; /* big text */
   line-height: 1.2; /* allow wrapping */
   text-align: center; /* center lines */
-  max-width: 800px; /* don’t let it stretch too wide */
+  max-width: 1000px; /* don’t let it stretch too wide */
   margin: 0 auto;
   color: #24690d; /* match your brand color */
 }
