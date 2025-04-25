@@ -644,6 +644,24 @@ def api_sold_items():
         conn.close()
     return jsonify(data)
 
+@app.route('/api/inventory-items')
+def api_inventory_items():
+    try:
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        # Pull all inventory rows, you can add an ORDER BY if you like
+        cursor.execute("SELECT * FROM inventory_items ORDER BY list_date DESC")
+        rows = cursor.fetchall()
+        # Grab the column names for dict-wrapping
+        columns = [column[0] for column in cursor.description]
+        data = [dict(zip(columns, row)) for row in rows]
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        conn.close()
+    return jsonify(data)
+
+
 @app.route('/api/sold-items/<order_id>', methods=['PATCH'])
 def update_sold_item(order_id):
     data = request.get_json() or {}
