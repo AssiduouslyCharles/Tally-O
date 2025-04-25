@@ -55,7 +55,7 @@ button:hover {
 
 /* make the table collapse adjacent borders into a single line */
 #sold-items-table {
-  width: 100%;
+  width: 95%;
   border-collapse: collapse;
   border: 2px solid #24690d;
   border-radius: 8px;
