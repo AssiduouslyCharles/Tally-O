@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS transactions (
 -- Create the sold_items table.
 -- Using order_id as the PRIMARY KEY (ensure that order_id is unique per sold item).
 CREATE TABLE IF NOT EXISTS sold_items (
-    order_id TEXT PRIMARY KEY,
+    order_id TEXT,
     transaction_id TEXT,
     item_id TEXT,
     item_title TEXT,
@@ -45,7 +45,8 @@ CREATE TABLE IF NOT EXISTS sold_items (
     net_profit_margin REAL,
     refund_to_buyer REAL,
     refund_owed REAL,
-    refund_to_seller REAL
+    refund_to_seller REAL,
+    PRIMARY KEY (order_id, transaction_id)
 );
 
 CREATE TABLE IF NOT EXISTS transactions_grouped (
