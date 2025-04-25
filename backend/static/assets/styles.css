@@ -86,3 +86,20 @@ button:hover {
   border: 1px solid #ccc;
   padding: 8px;
 }
+
+/* mirror sold-items styling for the inventory table */
+#inventory-items-table {
+  width: calc(100% - 32px);
+  margin: 0 16px;
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 10px solid #24690d;
+  border-radius: 30px;
+  overflow: hidden;
+}
+
+#inventory-items-table th,
+#inventory-items-table td {
+  border: 1px solid #ccc;
+  padding: 8px;
+}
