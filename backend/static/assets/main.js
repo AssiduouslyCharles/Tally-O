@@ -207,6 +207,11 @@ document.addEventListener("DOMContentLoaded", () => {
           <td>${item.item_title ?? ""}</td>
           <td>${listedFor}</td>
           <td>${item.storage_location ?? ""}</td>
+          <td>${
+            item.list_price != null
+              ? "$" + parseFloat(item.list_price).toFixed(2)
+              : ""
+          }</td>
           <td contenteditable="true" data-field="item_cost">
             ${
               item.item_cost != null
@@ -218,11 +223,6 @@ document.addEventListener("DOMContentLoaded", () => {
             ${item.purchased_at ?? ""}
           </td>
           <td>${listDateFormatted}</td>
-          <td>${
-            item.list_price != null
-              ? "$" + parseFloat(item.list_price).toFixed(2)
-              : ""
-          }</td>
           <td>${item.sku ?? ""}</td>
         `;
           invBody.appendChild(row);
