@@ -91,11 +91,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 if (field === "item_cost") {
                   // Parse values for recalculation
-                  const soldFor =
-                    parseFloat(
-                      row.querySelector('td[data-field="sold_for_price"]')
-                        .innerText
-                    ) || 0;
+                  const soldFor = parseFloat(row.dataset.soldForPrice) || 0;
                   const shippingPaid =
                     parseFloat(row.dataset.shippingPaid) || 0;
                   const finalFee = parseFloat(row.dataset.finalFee) || 0;
