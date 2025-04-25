@@ -113,9 +113,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     international,
                     costToShip,
                     itemCost,
-                    netReturn,
-                    roi,
-                    netProfitMargin,
                   });
                   // Recalculate
                   const netReturn =
@@ -131,6 +128,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     soldFor + shippingPaid > 0
                       ? (netReturn / (soldFor + shippingPaid)) * 100
                       : 0;
+
+                  console.log({ netReturn, roi, netProfitMargin });
 
                   // Update UI
                   row.querySelector('td[data-field="net_return"]').innerText =
