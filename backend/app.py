@@ -329,7 +329,11 @@ def get_sold_list_data(cursor, access_token):
     XML_PAYLOAD = f"""<?xml version="1.0" encoding="utf-8"?>
     <GetMyeBaySellingRequest xmlns="urn:ebay:apis:eBLBaseComponents">
         <DetailLevel>ReturnAll</DetailLevel>
-        <OutputSelector>PictureDetails.GalleryURL</OutputSelector>
+        <OutputSelector>
+        SoldList.OrderTransactionArray.OrderTransaction
+        .Order.TransactionArray.Transaction
+        .Item.PictureDetails.GalleryURL
+        </OutputSelector>
         <RequesterCredentials>
             <eBayAuthToken>{access_token}</eBayAuthToken>
         </RequesterCredentials>
