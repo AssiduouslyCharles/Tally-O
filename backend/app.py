@@ -250,7 +250,7 @@ def get_inventory_data(cursor, access_token):
               item_id, item_title, photo_url, list_price,
               list_date, item_cost, available_quantity,
               purchased_at, sku, storage_location
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(item_id) DO UPDATE SET
               item_title        = excluded.item_title,
               photo_url         = excluded.photo_url,
