@@ -56,7 +56,7 @@ button:hover {
 /* Hero section on index.html */
 .hero {
   /* full viewport minus header (assumes header ~100px tall—tweak as needed) */
-  min-height: calc(100vh - 100px);
+  min-height: calc(100vh - 50px);
   display: flex;
   align-items: center;
   justify-content: center;
