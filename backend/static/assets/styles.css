@@ -58,8 +58,8 @@ button:hover {
   width: calc(100% - 32px);
   margin: 0 16px;
   border-collapse: collapse;
-  border: 5px solid #24690d;
-  border-radius: 20px;
+  border: 10px solid #24690d;
+  border-radius: 30px;
   overflow: hidden;
 }
 
