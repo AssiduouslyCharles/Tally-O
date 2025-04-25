@@ -57,12 +57,11 @@ button:hover {
 #sold-items-table {
   width: 100%;
   border-collapse: collapse;
-  table-layout: fixed;
 }
 
 #sold-items-table .title-cell {
   /* set whatever width you need for your design */
-  width: 500px;
+  width: 300px;
   /* allow text to break/wrap */
   white-space: normal;
   word-wrap: break-word;
