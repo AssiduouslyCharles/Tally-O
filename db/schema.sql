@@ -65,7 +65,7 @@ CREATE TABLE IF NOT EXISTS transactions_grouped (
     credit_amount                REAL
 );
 
-CREATE TABLE IF NOT EXISTS inventory (
+CREATE TABLE IF NOT EXISTS inventory_items (
     item_id             TEXT    PRIMARY KEY,
     item_title          TEXT,
     photo_url           TEXT,
@@ -74,5 +74,6 @@ CREATE TABLE IF NOT EXISTS inventory (
     item_cost           REAL,
     available_quantity  INTEGER,
     purchased_at        TEXT,
-    sku                 TEXT
+    sku                 TEXT,
+    storage_location    TEXT
 );

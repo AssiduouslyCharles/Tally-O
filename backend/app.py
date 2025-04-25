@@ -226,6 +226,7 @@ def get_inventory_data(cursor, access_token):
             # blank placeholders for manual columns
             item_cost          = None
             purchased_at       = None
+            storage_loc        = None
             sku                = item.find("SKU").text if item.find("SKU") else ""
             qty_avail          = int(item.find("QuantityAvailable").text) if item.find("QuantityAvailable") else 0
 
@@ -240,14 +241,15 @@ def get_inventory_data(cursor, access_token):
               item_cost         REAL,
               available_quantity INTEGER,
               purchased_at      TEXT,
-              sku               TEXT
+              sku               TEXT,
+              storage_location TEXT
             );
             """)
             cursor.execute("""
             INSERT INTO inventory_items (
               item_id, item_title, photo_url, list_price,
               list_date, item_cost, available_quantity,
-              purchased_at, sku
+              purchased_at, sku, storage_location
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(item_id) DO UPDATE SET
               item_title        = excluded.item_title,
@@ -259,7 +261,7 @@ def get_inventory_data(cursor, access_token):
             """, (
               item_id, title, photo_url, list_price,
               start_time, item_cost, qty_avail,
-              purchased_at, sku
+              purchased_at, sku, storage_loc
             ))
             total += 1
 
