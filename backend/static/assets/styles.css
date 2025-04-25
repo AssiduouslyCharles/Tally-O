@@ -53,6 +53,26 @@ button:hover {
   background-color: #f2e710;
 }
 
+/* Hero section on index.html */
+.hero {
+  /* full viewport minus header (assumes header ~100px tall—tweak as needed) */
+  min-height: calc(100vh - 100px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 20px;
+  background: #ffffff; /* or a subtle gradient/background image */
+}
+
+.hero h2 {
+  font-size: 2.5rem; /* big text */
+  line-height: 1.2; /* allow wrapping */
+  text-align: center; /* center lines */
+  max-width: 800px; /* don’t let it stretch too wide */
+  margin: 0 auto;
+  color: #24690d; /* match your brand color */
+}
+
 /* make the table collapse adjacent borders into a single line */
 #sold-items-table {
   width: calc(100% - 32px);
