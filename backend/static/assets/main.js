@@ -105,6 +105,18 @@ document.addEventListener("DOMContentLoaded", () => {
                   const costToShip = parseFloat(row.dataset.costToShip) || 0;
                   const itemCost = parseFloat(newValue) || 0;
 
+                  console.log({
+                    soldFor,
+                    shippingPaid,
+                    finalFee,
+                    fixedFinalFee,
+                    international,
+                    costToShip,
+                    itemCost,
+                    netReturn,
+                    roi,
+                    netProfitMargin,
+                  });
                   // Recalculate
                   const netReturn =
                     soldFor +
