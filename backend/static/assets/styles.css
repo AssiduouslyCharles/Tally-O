@@ -57,6 +57,25 @@ button:hover {
 #sold-items-table {
   width: 100%;
   border-collapse: collapse;
+  table-layout: fixed;
+}
+
+#sold-items-table .title-cell {
+  /* set whatever width you need for your design */
+  width: 200px;
+  /* allow text to break/wrap */
+  white-space: normal;
+  word-wrap: break-word;
+  /* clamp to two lines with ellipsis if it overflows */
+  display: -webkit-box; /* old WebKit fallback */
+  display: box; /* standard fallback */
+  -webkit-box-orient: vertical;
+  box-orient: vertical; /* standard fallback */
+
+  -webkit-line-clamp: 2; /* WebKit */
+  line-clamp: 2; /* standard (for future compatibility) */
+
+  overflow: hidden;
 }
 
 /* draw a 1px separator around every cell (you can remove side-borders if you only want horizontal lines) */

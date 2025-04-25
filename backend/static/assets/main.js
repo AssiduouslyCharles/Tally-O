@@ -36,7 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
           row.dataset.soldForPrice = item.sold_for_price;
 
           row.innerHTML = `
-          <td>${item.item_title ?? ""}</td>
+          <td class="title-cell">${item.item_title ?? ""}</td>
           <td>${soldDateFormatted}</td>
           <td contenteditable="true" data-field="item_cost">
             ${item.item_cost != null ? "$" + item.item_cost : ""}
