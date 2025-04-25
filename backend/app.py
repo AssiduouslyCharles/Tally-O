@@ -162,6 +162,116 @@ def insights():
 # Helper Functions for Proxying   #
 ###################################
 
+import os
+import requests
+from bs4 import BeautifulSoup
+
+def get_inventory_data(cursor, access_token):
+    """
+    Retrieve active inventory items from eBay (GetMyeBaySelling → ActiveList),
+    and upsert them into an SQLite table 'inventory_items'.
+    """
+    EBAY_API_URL = "https://api.ebay.com/ws/api.dll"
+    EBAY_DEV_ID  = os.environ["EBAY_DEV_ID"]
+    EBAY_APP_ID  = os.environ["EBAY_APP_ID"]
+    EBAY_CERT_ID = os.environ["EBAY_CERT_ID"]
+
+    headers = {
+        "X-EBAY-API-COMPATIBILITY-LEVEL": "967",
+        "X-EBAY-API-DEV-NAME":            EBAY_DEV_ID,
+        "X-EBAY-API-APP-NAME":            EBAY_APP_ID,
+        "X-EBAY-API-CERT-NAME":           EBAY_CERT_ID,
+        "X-EBAY-API-CALL-NAME":           "GetMyeBaySelling",
+        "X-EBAY-API-SITEID":              "0",
+        "Content-Type":                   "text/xml",
+    }
+
+    page = 1
+    total = 0
+
+    while True:
+        # 1) Build the XML asking for the gallery URL as well
+        xml = f"""<?xml version="1.0" encoding="utf-8"?>
+<GetMyeBaySellingRequest xmlns="urn:ebay:apis:eBLBaseComponents">
+  <RequesterCredentials>
+    <eBayAuthToken>{access_token}</eBayAuthToken>
+  </RequesterCredentials>
+  <ActiveList>
+    <Include>true</Include>
+    <Pagination>
+      <EntriesPerPage>200</EntriesPerPage>
+      <PageNumber>{page}</PageNumber>
+    </Pagination>
+  </ActiveList>
+</GetMyeBaySellingRequest>"""
+
+        resp = requests.post(EBAY_API_URL, headers=headers, data=xml)
+        if resp.status_code != 200:
+            print("Error fetching inventory (page", page, "):", resp.status_code, resp.text)
+            break
+
+        soup = BeautifulSoup(resp.text, "xml")
+        active = soup.find("ActiveList")
+        if not active:
+            break
+
+        items = active.find_all("Item")
+        if not items:
+            break
+
+        for item in items:
+            # Extract fields (with safe defaults)
+            item_id     = item.find("ItemID").text if item.find("ItemID") else None
+            title       = item.find("Title").text  if item.find("Title") else ""
+            photo_url = item.find("PictureDetails").text if item.find("PictureDetails") else ""
+            price       = item.find("CurrentPrice") or item.find("BuyItNowPrice")
+            list_price  = float(price.text) if (price and price.text) else 0.0
+            start_time  = item.find("StartTime").text if item.find("StartTime") else ""
+            # blank placeholders for manual columns
+            item_cost          = None
+            purchased_at       = None
+            sku                = item.find("SKU").text if item.find("SKU") else ""
+            qty_avail          = int(item.find("QuantityAvailable").text) if item.find("QuantityAvailable") else 0
+
+            # Upsert into SQLite
+            cursor.execute("""
+            CREATE TABLE IF NOT EXISTS inventory_items (
+              item_id           TEXT    PRIMARY KEY,
+              item_title        TEXT,
+              photo_url         TEXT,
+              list_price        REAL,
+              list_date         TEXT,
+              item_cost         REAL,
+              available_quantity INTEGER,
+              purchased_at      TEXT,
+              sku               TEXT
+            );
+            """)
+            cursor.execute("""
+            INSERT INTO inventory_items (
+              item_id, item_title, photo_url, list_price,
+              list_date, item_cost, available_quantity,
+              purchased_at, sku
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(item_id) DO UPDATE SET
+              item_title        = excluded.item_title,
+              photo_url         = excluded.photo_url,
+              list_price        = excluded.list_price,
+              list_date         = excluded.list_date,
+              sku               = excluded.sku,
+              available_quantity= excluded.available_quantity;
+            """, (
+              item_id, title, photo_url, list_price,
+              start_time, item_cost, qty_avail,
+              purchased_at, sku
+            ))
+            total += 1
+
+        page += 1
+
+    print(f"Upserted {total} inventory items into 'inventory_items'.")
+
+
 def get_transactions_data(cursor, access_token):
     """
     Retrieve transactions from the eBay Finances API,
@@ -493,6 +603,7 @@ def update_ebay_data():
         # Call helper functions to update the database
         get_transactions_data(cursor, access_token)
         get_sold_list_data(cursor, access_token)
+        get_inventory_data(cursor, access_token)
         update_sold_data(cursor)
         
         conn.commit()

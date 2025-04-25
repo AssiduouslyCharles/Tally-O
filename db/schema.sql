@@ -64,3 +64,15 @@ CREATE TABLE IF NOT EXISTS transactions_grouped (
     dispute_amount               REAL,
     credit_amount                REAL
 );
+
+CREATE TABLE IF NOT EXISTS inventory (
+    item_id             TEXT    PRIMARY KEY,
+    item_title          TEXT,
+    photo_url           TEXT,
+    list_price          REAL,
+    list_date           TEXT,
+    item_cost           REAL,
+    available_quantity  INTEGER,
+    purchased_at        TEXT,
+    sku                 TEXT
+);
