@@ -52,3 +52,16 @@ button {
 button:hover {
   background-color: #f2e710;
 }
+
+/* make the table collapse adjacent borders into a single line */
+#sold-items-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+/* draw a 1px separator around every cell (you can remove side-borders if you only want horizontal lines) */
+#sold-items-table th,
+#sold-items-table td {
+  border: 1px solid #ccc;
+  padding: 8px;
+}
