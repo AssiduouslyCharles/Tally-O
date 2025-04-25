@@ -168,9 +168,9 @@ def get_inventory_data(cursor, access_token):
     and upsert them into an SQLite table 'inventory_items'.
     """
     EBAY_API_URL = "https://api.ebay.com/ws/api.dll"
-    EBAY_DEV_ID  = os.environ["EBAY_DEV_ID"]
-    EBAY_APP_ID  = os.environ["EBAY_APP_ID"]
-    EBAY_CERT_ID = os.environ["EBAY_CERT_ID"]
+    EBAY_DEV_ID  = os.environ.get("EBAY_DEV_ID")
+    EBAY_APP_ID  = os.environ.get("EBAY_APP_ID")
+    EBAY_CERT_ID = os.environ.get("EBAY_CERT_ID")
 
     headers = {
         "X-EBAY-API-COMPATIBILITY-LEVEL": "967",
