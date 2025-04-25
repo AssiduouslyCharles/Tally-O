@@ -33,6 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
           row.dataset.costToShip = item.cost_to_ship;
           row.dataset.shippingPaid = item.shipping_paid;
           row.dataset.netProfitMargin = item.net_profit_margin;
+          row.dataset.soldForPrice = item.sold_for_price;
 
           row.innerHTML = `
           <td>${item.item_title ?? ""}</td>
