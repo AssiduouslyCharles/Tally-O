@@ -162,10 +162,6 @@ def insights():
 # Helper Functions for Proxying   #
 ###################################
 
-import os
-import requests
-from bs4 import BeautifulSoup
-
 def get_inventory_data(cursor, access_token):
     """
     Retrieve active inventory items from eBay (GetMyeBaySelling → ActiveList),
@@ -192,18 +188,18 @@ def get_inventory_data(cursor, access_token):
     while True:
         # 1) Build the XML asking for the gallery URL as well
         xml = f"""<?xml version="1.0" encoding="utf-8"?>
-<GetMyeBaySellingRequest xmlns="urn:ebay:apis:eBLBaseComponents">
-  <RequesterCredentials>
-    <eBayAuthToken>{access_token}</eBayAuthToken>
-  </RequesterCredentials>
-  <ActiveList>
-    <Include>true</Include>
-    <Pagination>
-      <EntriesPerPage>200</EntriesPerPage>
-      <PageNumber>{page}</PageNumber>
-    </Pagination>
-  </ActiveList>
-</GetMyeBaySellingRequest>"""
+        <GetMyeBaySellingRequest xmlns="urn:ebay:apis:eBLBaseComponents">
+        <RequesterCredentials>
+        <eBayAuthToken>{access_token}</eBayAuthToken>
+        </RequesterCredentials>
+        <ActiveList>
+            <Include>true</Include>
+            <Pagination>
+                <EntriesPerPage>200</EntriesPerPage>
+                <PageNumber>{page}</PageNumber>
+            </Pagination>
+        </ActiveList>
+        </GetMyeBaySellingRequest>"""
 
         resp = requests.post(EBAY_API_URL, headers=headers, data=xml)
         if resp.status_code != 200:
