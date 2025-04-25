@@ -60,8 +60,6 @@ button:hover {
 }
 
 #sold-items-table .title-cell {
-  /* set whatever width you need for your design */
-  width: 300px;
   /* allow text to break/wrap */
   white-space: normal;
   word-wrap: break-word;
