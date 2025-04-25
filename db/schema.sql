@@ -21,9 +21,7 @@ CREATE TABLE IF NOT EXISTS transactions (
 
 -- Create the sold_items table.
 -- Using order_id as the PRIMARY KEY (ensure that order_id is unique per sold item).
-DROP TABLE IF EXISTS sold_items;
-
-CREATE TABLE sold_items (
+CREATE TABLE IF NOT EXISTS sold_items (
     order_id TEXT,
     transaction_id TEXT,
     item_id TEXT,
