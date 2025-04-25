@@ -174,4 +174,95 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     })
     .catch((error) => console.error("Error fetching sold items:", error));
+
+  // 4. Fetch and render inventory items data
+  fetch("/api/inventory-items")
+    .then((response) => response.json())
+    .then((data) => {
+      const invBody = document.querySelector("#inventory-items-table tbody");
+      if (invBody && Array.isArray(data)) {
+        data.forEach((item) => {
+          // 1) Compute "Listed For" as days since list_date
+          let listedFor = "";
+          if (item.list_date) {
+            const dt = new Date(item.list_date);
+            const diffMs = Date.now() - dt.getTime();
+            const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+            listedFor = diffDays + " Days";
+          }
+
+          // 2) Optional: format list_date as "April 22, 2025"
+          const listDateFormatted = item.list_date
+            ? new Date(item.list_date).toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })
+            : "";
+
+          const row = document.createElement("tr");
+          row.dataset.itemId = item.item_id;
+
+          row.innerHTML = `
+          <td>${item.item_title ?? ""}</td>
+          <td>${listedFor}</td>
+          <td>${item.storage_location ?? ""}</td>
+          <td contenteditable="true" data-field="item_cost">
+            ${
+              item.item_cost != null
+                ? "$" + parseFloat(item.item_cost).toFixed(2)
+                : ""
+            }
+          </td>
+          <td contenteditable="true" data-field="purchased_at">
+            ${item.purchased_at ?? ""}
+          </td>
+          <td>${listDateFormatted}</td>
+          <td>${
+            item.list_price != null
+              ? "$" + parseFloat(item.list_price).toFixed(2)
+              : ""
+          }</td>
+          <td>${item.sku ?? ""}</td>
+        `;
+          invBody.appendChild(row);
+        });
+
+        // 5. Attach blur listeners for item_cost and purchased_at
+        invBody
+          .querySelectorAll('td[contenteditable="true"]')
+          .forEach((cell) => {
+            cell.addEventListener("blur", async (e) => {
+              const td = e.target;
+              const newValue = td.innerText.trim();
+              const field = td.dataset.field; // "item_cost" or "purchased_at"
+              const row = td.closest("tr");
+              const itemId = row.dataset.itemId;
+
+              const payload = {};
+              if (field === "item_cost") {
+                // strip non-numeric and parse
+                const num = parseFloat(newValue.replace(/[^0-9.-]/g, "")) || 0;
+                payload[field] = num;
+              } else {
+                payload[field] = newValue;
+              }
+
+              try {
+                const res = await fetch(`/api/inventory-items/${itemId}`, {
+                  method: "PATCH",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify(payload),
+                });
+                if (!res.ok) {
+                  console.error("Inventory update failed:", await res.text());
+                }
+              } catch (err) {
+                console.error("Error updating inventory:", err);
+              }
+            });
+          });
+      }
+    })
+    .catch((err) => console.error("Error fetching inventory items:", err));
 });
