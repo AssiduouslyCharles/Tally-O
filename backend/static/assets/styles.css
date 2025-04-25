@@ -35,7 +35,7 @@ header .header-left nav button {
 }*/
 
 main {
-  margin-top: 50px;
+  margin-top: 30px;
 }
 
 button {
@@ -59,7 +59,7 @@ button:hover {
   margin: 0 16px;
   border-collapse: collapse;
   border: 2px solid #24690d;
-  border-radius: 8px;
+  border-radius: 12px;
   overflow: hidden;
 }
 
