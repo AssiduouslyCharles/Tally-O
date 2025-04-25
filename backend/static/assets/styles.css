@@ -56,12 +56,12 @@ button:hover {
 /* Hero section on index.html */
 .hero {
   /* full viewport minus header (assumes header ~100px tall—tweak as needed) */
-  min-height: calc(50vh - 100px);
+  min-height: calc(70vh - 100px);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 0 10px;
-  background: #ffffff; /* or a subtle gradient/background image */
+  background: #f5f5f5; /* or a subtle gradient/background image */
 }
 
 .hero h2 {
