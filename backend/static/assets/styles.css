@@ -123,3 +123,18 @@ button:hover {
   border: 1px solid #ccc;
   padding: 8px;
 }
+
+.insights-hero {
+  padding: 20px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+.date-filters {
+  display: flex;
+  gap: 1em;
+  margin-bottom: 1em;
+}
+#insights-chart {
+  width: 100% !important;
+  height: 400px !important;
+}
