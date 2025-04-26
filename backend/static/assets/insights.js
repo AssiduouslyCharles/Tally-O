@@ -14,10 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
   startInput.value = prior30;
 
   async function loadAndRender() {
-    if (chart) {
-      chart.destroy();
-      chart = null;
-    }
+    // 1) Fetch your data first
     const start = startInput.value;
     const end = endInput.value;
     const res = await fetch(
@@ -28,33 +25,21 @@ document.addEventListener("DOMContentLoaded", () => {
     const gross = data.map((d) => d.gross);
     const net = data.map((d) => d.net);
 
+    // 2) Build the chart config
     const cfg = {
       type: "line",
       data: {
         labels,
         datasets: [
-          {
-            label: "Gross Sales",
-            data: gross,
-            fill: false,
-            tension: 0.2,
-          },
-          {
-            label: "Net Sales",
-            data: net,
-            fill: false,
-            tension: 0.2,
-          },
+          { label: "Gross Sales", data: gross, fill: false, tension: 0.2 },
+          { label: "Net Sales", data: net, fill: false, tension: 0.2 },
         ],
       },
       options: {
         scales: {
           x: {
             type: "time",
-            time: {
-              unit: "day",
-              displayFormats: { day: "MMM D" },
-            },
+            time: { unit: "day", displayFormats: { day: "MMM d" } },
           },
           y: {
             ticks: { callback: (v) => "$" + v.toFixed(2) },
@@ -64,20 +49,18 @@ document.addEventListener("DOMContentLoaded", () => {
           tooltip: {
             callbacks: {
               label: (ctx) =>
-                ctx.dataset.label + ": $" + ctx.parsed.y.toFixed(2),
+                `${ctx.dataset.label}: $${ctx.parsed.y.toFixed(2)}`,
             },
           },
         },
       },
     };
 
+    // 3) Destroy the old chart (if any) and create a new one
     if (chart) {
-      chart.data = cfg.data;
-      chart.options = cfg.options;
-      chart.update();
-    } else {
-      chart = new Chart(ctx, cfg);
+      chart.destroy();
     }
+    chart = new Chart(ctx, cfg);
   }
 
   refreshBtn.addEventListener("click", loadAndRender);

@@ -7,15 +7,20 @@
       rel="stylesheet"
       href="{{ url_for('static', filename='assets/styles.css') }}"
     />
+    <!-- 1) Load the Google Charts corechart package -->
+    <script
+      type="text/javascript"
+      src="https://www.gstatic.com/charts/loader.js"
+    ></script>
   </head>
   <body>
     <header class="site-header">
       <div class="header-left">
         <nav>
-          <button onclick="window.location.href='/'">Home</button>
-          <button onclick="window.location.href='/inventory'">Inventory</button>
-          <button onclick="window.location.href='/sold'">Sold</button>
-          <button onclick="window.location.href='/insights'">Insights</button>
+          <button onclick="location.href='/'">Home</button>
+          <button onclick="location.href='/inventory'">Inventory</button>
+          <button onclick="location.href='/sold'">Sold</button>
+          <button onclick="location.href='/insights'">Insights</button>
         </nav>
         <h1>Tally-O: Insights</h1>
       </div>
@@ -36,19 +41,96 @@
           </label>
           <button id="insights-refresh">Refresh</button>
         </div>
-        <canvas id="insights-chart"></canvas>
+
+        <!-- 2) Replace <canvas> with a div for Google Charts -->
+        <div id="insights-chart" style="width: 100%; height: 500px"></div>
       </section>
     </main>
 
-    <!-- library scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
-    <!-- your module script (allows top-level imports) -->
-    <script
-      type="module"
-      src="{{ url_for('static', filename='assets/insights.js') }}"
-    ></script>
-    <!-- global behaviors (login button, etc.) -->
+    <!-- 3) Your existing main.js for login button, etc. -->
     <script src="{{ url_for('static', filename='assets/main.js') }}"></script>
+
+    <!-- 4) Inline script to fetch & draw the area chart -->
+    <script type="text/javascript">
+      // Load the Visualization API and the corechart package.
+      google.charts.load("current", { packages: ["corechart"] });
+
+      // Once loaded, call our initializer
+      google.charts.setOnLoadCallback(initInsightsChart);
+
+      function initInsightsChart() {
+        const startInput = document.getElementById("insights-start");
+        const endInput = document.getElementById("insights-end");
+        const refreshBtn = document.getElementById("insights-refresh");
+
+        // default to last 30 days
+        const today = new Date().toISOString().slice(0, 10);
+        endInput.value = today;
+        startInput.value = new Date(Date.now() - 1000 * 60 * 60 * 24 * 30)
+          .toISOString()
+          .slice(0, 10);
+
+        // redraw whenever user clicks Refresh
+        refreshBtn.addEventListener("click", drawInsightsChart);
+
+        // initial draw
+        drawInsightsChart();
+      }
+
+      async function drawInsightsChart() {
+        const start = document.getElementById("insights-start").value;
+        const end = document.getElementById("insights-end").value;
+
+        // Fetch time-series data from your Flask endpoint
+        const res = await fetch(
+          `/api/insights-data?start_date=${start}&end_date=${end}`
+        );
+        const rows = await res.json();
+
+        // Build the array for Google Charts: [ ['Date','Gross','Net'], [new Date(...), 123, 45], ... ]
+        const dataArray = [
+          ["Date", "Gross Sales", "Net Sales"],
+          ...rows.map((r) => [
+            // monthIndex is zero-based: new Date(year, month-1, day)
+            new Date(
+              ...r.date
+                .split("-")
+                .map((v, i) =>
+                  i === 1 ? parseInt(v, 10) - 1 : parseInt(v, 10)
+                )
+            ),
+            r.gross,
+            r.net,
+          ]),
+        ];
+
+        // Convert to DataTable
+        const dataTable = google.visualization.arrayToDataTable(dataArray);
+
+        // Chart options
+        const options = {
+          title: "Gross vs Net Sales Over Time",
+          hAxis: {
+            title: "Date",
+            format: "MMM d, yyyy",
+          },
+          vAxis: {
+            title: "Amount (USD)",
+            format: "currency",
+          },
+          isStacked: false,
+          areaOpacity: 0.2,
+          legend: { position: "top" },
+        };
+
+        // Draw!
+        const chartDiv = document.getElementById("insights-chart");
+        const chart = new google.visualization.AreaChart(chartDiv);
+        chart.draw(dataTable, options);
+      }
+
+      // Redraw on window resize to keep it responsive
+      window.addEventListener("resize", drawInsightsChart);
+    </script>
   </body>
 </html>
