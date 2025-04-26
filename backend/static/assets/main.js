@@ -315,6 +315,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const dataTable = google.visualization.arrayToDataTable(dataArray);
       const options = {
         title: "Gross vs Net Sales Over Time",
+        height: 300,
         hAxis: { title: "Date", format: "MMM d, yyyy" },
         vAxis: { title: "Amount (USD)", format: "currency" },
         isStacked: false,
