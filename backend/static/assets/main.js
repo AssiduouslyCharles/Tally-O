@@ -301,6 +301,14 @@ document.addEventListener("DOMContentLoaded", () => {
       );
       const rows = await res.json();
 
+      // → NEW: compute totals
+      const totalGross = rows.reduce((sum, r) => sum + (r.gross || 0), 0);
+      const totalNet = rows.reduce((sum, r) => sum + (r.net || 0), 0);
+      document.getElementById("total-gross").textContent =
+        "$" + totalGross.toFixed(2);
+      document.getElementById("total-net").textContent =
+        "$" + totalNet.toFixed(2);
+
       // build google dataArray
       const dataArray = [
         ["Date", "Gross Sales", "Net Sales"],

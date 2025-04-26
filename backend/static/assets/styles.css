@@ -147,3 +147,18 @@ button:hover {
   width: 100%;
   height: 100%;
 }
+
+/* summary bar above the insights chart */
+.insights-summary {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  font-size: 1.1em;
+  font-weight: bold;
+}
+.insights-summary div {
+  background: #fff;
+  padding: 8px 12px;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
