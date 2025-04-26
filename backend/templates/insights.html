@@ -40,10 +40,15 @@
       </section>
     </main>
 
-    <!-- include Chart.js from CDN -->
+    <!-- library scripts -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
-    <script src="{{ url_for('static', filename='assets/insights.js') }}"></script>
+    <!-- your module script (allows top-level imports) -->
+    <script
+      type="module"
+      src="{{ url_for('static', filename='assets/insights.js') }}"
+    ></script>
+    <!-- global behaviors (login button, etc.) -->
     <script src="{{ url_for('static', filename='assets/main.js') }}"></script>
   </body>
 </html>

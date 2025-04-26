@@ -52,7 +52,6 @@ document.addEventListener("DOMContentLoaded", () => {
           x: {
             type: "time",
             time: {
-              parser: "YYYY-MM-DD",
               unit: "day",
               displayFormats: { day: "MMM D" },
             },
