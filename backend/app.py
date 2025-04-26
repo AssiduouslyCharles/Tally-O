@@ -714,6 +714,42 @@ def update_inventory_item(item_id):
     conn.close()
     return jsonify({"status": "updated"})
 
+@app.route('/api/insights-data')
+def api_insights_data():
+    """
+    Return JSON: [{ date: "2025-04-01", gross: 123.45, net: 67.89 }, …]
+    for sold_items between ?start_date and ?end_date (YYYY-MM-DD).
+    """
+    start = request.args.get("start_date")
+    end   = request.args.get("end_date")
+    # default to last 30 days
+    if not end:
+        end = datetime.utcnow().date().isoformat()
+    if not start:
+        start = (datetime.fromisoformat(end) - timedelta(days=30)).date().isoformat()
+
+    conn = sqlite3.connect(db_path)
+    cur  = conn.cursor()
+    cur.execute("""
+      SELECT
+        DATE(sold_date) AS day,
+        SUM(sold_for_price) AS gross,
+        SUM(net_return)    AS net
+      FROM sold_items
+      WHERE DATE(sold_date) BETWEEN ? AND ?
+      GROUP BY day
+      ORDER BY day
+    """, (start, end))
+    rows = cur.fetchall()
+    conn.close()
+
+    # build a list of dicts
+    data = [
+      {"date": r[0], "gross": r[1] or 0.0, "net": r[2] or 0.0}
+      for r in rows
+    ]
+    return jsonify(data)
+
 
 if __name__ == '__main__':
     # Run your Flask application in debug mode during development
