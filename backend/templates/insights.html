@@ -24,9 +24,24 @@
       </div>
     </header>
     <main>
-      <section></section>
+      <section class="insights-hero">
+        <div class="date-filters">
+          <label>
+            From
+            <input type="date" id="insights-start" />
+          </label>
+          <label>
+            To
+            <input type="date" id="insights-end" />
+          </label>
+          <button id="insights-refresh">Refresh</button>
+        </div>
+        <canvas id="insights-chart"></canvas>
+      </section>
     </main>
 
-    <script src="{{ url_for('static', filename='assets/main.js') }}"></script>
+    <!-- include Chart.js from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{{ url_for('static', filename='assets/insights.js') }}"></script>
   </body>
 </html>
