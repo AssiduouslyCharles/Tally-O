@@ -30,11 +30,6 @@
     </header>
     <main>
       <section class="insights-hero">
-        <div class="insights-summary">
-          <div>Gross Sales: <span id="total-gross">$0.00</span></div>
-          <div>Net Sales: <span id="total-net">$0.00</span></div>
-        </div>
-        <div class="date-filters">
         <div class="date-filters">
           <label>
             From
@@ -45,6 +40,10 @@
             <input type="date" id="insights-end" />
           </label>
           <button id="insights-refresh">Refresh</button>
+        </div>
+        <div class="insights-summary">
+          <div>Total Gross Sales: <span id="total-gross">$0.00</span></div>
+          <div>Total Net Sales: <span id="total-net">$0.00</span></div>
         </div>
 
         <!-- 2) Replace <canvas> with a div for Google Charts -->
