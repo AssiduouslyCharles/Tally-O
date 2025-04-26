@@ -267,4 +267,67 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     })
     .catch((err) => console.error("Error fetching inventory items:", err));
+
+  // ────────────────────────────────────
+  // Insights page: Google AreaChart
+  // ────────────────────────────────────
+  if (document.getElementById("insights-chart")) {
+    // 1) Load the Google Charts corechart package
+    google.charts.load("current", { packages: ["corechart"] });
+    google.charts.setOnLoadCallback(initInsightsChart);
+
+    function initInsightsChart() {
+      const startInput = document.getElementById("insights-start");
+      const endInput = document.getElementById("insights-end");
+      const refreshBtn = document.getElementById("insights-refresh");
+
+      // default to last 30 days
+      const today = new Date().toISOString().slice(0, 10);
+      const prior = new Date(Date.now() - 1000 * 60 * 60 * 24 * 30)
+        .toISOString()
+        .slice(0, 10);
+      endInput.value = today;
+      startInput.value = prior;
+
+      refreshBtn.addEventListener("click", drawInsightsChart);
+      drawInsightsChart();
+    }
+
+    async function drawInsightsChart() {
+      const start = document.getElementById("insights-start").value;
+      const end = document.getElementById("insights-end").value;
+      const res = await fetch(
+        `/api/insights-data?start_date=${start}&end_date=${end}`
+      );
+      const rows = await res.json();
+
+      // build google dataArray
+      const dataArray = [
+        ["Date", "Gross Sales", "Net Sales"],
+        ...rows.map((r) => {
+          const [y, m, d] = r.date
+            .split("-")
+            .map((v, i) => (i === 1 ? parseInt(v, 10) - 1 : parseInt(v, 10)));
+          return [new Date(y, m, d), r.gross, r.net];
+        }),
+      ];
+
+      const dataTable = google.visualization.arrayToDataTable(dataArray);
+      const options = {
+        title: "Gross vs Net Sales Over Time",
+        hAxis: { title: "Date", format: "MMM d, yyyy" },
+        vAxis: { title: "Amount (USD)", format: "currency" },
+        isStacked: false,
+        areaOpacity: 0.2,
+        legend: { position: "top" },
+      };
+
+      const chartDiv = document.getElementById("insights-chart");
+      const chart = new google.visualization.AreaChart(chartDiv);
+      chart.draw(dataTable, options);
+    }
+
+    // keep it responsive
+    window.addEventListener("resize", drawInsightsChart);
+  }
 });
