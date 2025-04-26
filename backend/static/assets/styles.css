@@ -132,6 +132,8 @@ button:hover {
   padding: 20px;
   max-width: 1200px;
   margin: 0 auto;
+  border: 10px solid #24690d;
+  border-radius: 30px;
 }
 
 .date-filters {
