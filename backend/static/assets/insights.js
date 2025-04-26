@@ -14,6 +14,10 @@ document.addEventListener("DOMContentLoaded", () => {
   startInput.value = prior30;
 
   async function loadAndRender() {
+    if (chart) {
+      chart.destroy();
+      chart = null;
+    }
     const start = startInput.value;
     const end = endInput.value;
     const res = await fetch(
