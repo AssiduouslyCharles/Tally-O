@@ -732,9 +732,10 @@ def api_insights_data():
     cur  = conn.cursor()
     cur.execute("""
       SELECT
-        DATE(sold_date) AS day,
+        DATE(sold_date)     AS day,
+        COUNT(*)            AS count,
         SUM(sold_for_price) AS gross,
-        SUM(net_return)    AS net
+        SUM(net_return)     AS net
       FROM sold_items
       WHERE DATE(sold_date) BETWEEN ? AND ?
       GROUP BY day
@@ -745,7 +746,11 @@ def api_insights_data():
 
     # build a list of dicts
     data = [
-      {"date": r[0], "gross": r[1] or 0.0, "net": r[2] or 0.0}
+      {
+        "date": r[0],
+        "count": r[1],
+        "gross": r[2] or 0.0, 
+        "net": r[3] or 0.0}
       for r in rows
     ]
     return jsonify(data)
