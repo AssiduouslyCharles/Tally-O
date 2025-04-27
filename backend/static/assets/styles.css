@@ -166,7 +166,7 @@ button:hover {
 /* ───────────── Insights stats bar ───────────── */
 .insights-stats {
   display: flex;
-  max-width: 1300px;
+  width: 90%;
   gap: 16px;
   justify-content: space-between;
   margin-top: 24px;
