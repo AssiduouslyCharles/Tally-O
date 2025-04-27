@@ -168,7 +168,7 @@ button:hover {
   display: flex;
   width: 90%;
   gap: 16px;
-  justify-content: space-between;
+  justify-content: center;
   margin-top: 24px;
 }
 .insights-stats > div {
