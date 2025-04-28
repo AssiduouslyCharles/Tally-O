@@ -152,6 +152,7 @@ button:hover {
 .insights-summary {
   display: flex;
   justify-content: left;
+  gap: 16px;
   margin-bottom: 16px;
   font-size: 1.1em;
   font-weight: bold;
