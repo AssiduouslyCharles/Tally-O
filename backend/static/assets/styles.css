@@ -144,6 +144,13 @@ button:hover {
   padding: 0 100px;
 }
 
+/* make just the “Refresh” button smaller */
+#insights-refresh {
+  font-size: 0.9em; /* slightly smaller text */
+  padding: 4px 8px; /* less padding */
+  line-height: 1.2; /* tighten the line height */
+}
+
 #insights-chart {
   width: 100%;
   height: 100%;
