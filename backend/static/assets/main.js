@@ -303,15 +303,26 @@ document.addEventListener("DOMContentLoaded", () => {
       const rows = json.data;
       const { total_gross, total_net, total_count, avg_npm } = json.summary;
 
-      // update your totals
+      // 1) Update total gross & net
       document.getElementById("total-gross").textContent =
         "$" + total_gross.toFixed(2);
       document.getElementById("total-net").textContent =
         "$" + total_net.toFixed(2);
-      // avg npm per sale
+
+      // 2) Compute per‐sale averages and total NPM
+      const avgGrossPerSale = total_count > 0 ? total_gross / total_count : 0;
+      const avgNetPerSale = total_count > 0 ? total_net / total_count : 0;
+      const totalNpm = total_gross > 0 ? (total_net / total_gross) * 100 : 0;
+
+      // 3) Inject the four summary stats
+      document.getElementById("avg-gross").textContent =
+        "$" + avgGrossPerSale.toFixed(2);
+      document.getElementById("avg-net").textContent =
+        "$" + avgNetPerSale.toFixed(2);
+      document.getElementById("npm").textContent = totalNpm.toFixed(1) + "%";
       document.getElementById("avg-npm").textContent = avg_npm.toFixed(1) + "%";
 
-      // build google dataArray
+      // 4) Build the data array for the chart
       const dataArray = [
         ["Date", "Gross Sales", "Net Sales"],
         ...rows.map((r) => {
@@ -323,6 +334,8 @@ document.addEventListener("DOMContentLoaded", () => {
       ];
 
       const dataTable = google.visualization.arrayToDataTable(dataArray);
+
+      // 5) Chart options (including any height/width you want)
       const options = {
         title: "Gross vs Net Sales Over Time",
         height: 300,
@@ -333,6 +346,7 @@ document.addEventListener("DOMContentLoaded", () => {
         legend: { position: "top" },
       };
 
+      // 6) Draw the chart
       const chartDiv = document.getElementById("insights-chart");
       const chart = new google.visualization.AreaChart(chartDiv);
       chart.draw(dataTable, options);
