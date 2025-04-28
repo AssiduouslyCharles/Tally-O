@@ -272,15 +272,14 @@ document.addEventListener("DOMContentLoaded", () => {
   // Insights page: Google AreaChart
   // ────────────────────────────────────
   if (document.getElementById("insights-chart")) {
-    // 1) Load the Google Charts corechart package
+    const startInput = document.getElementById("insights-start");
+    const endInput = document.getElementById("insights-end");
+    const refreshBtn = document.getElementById("insights-refresh");
+    // Load the Google Charts corechart package
     google.charts.load("current", { packages: ["corechart"] });
     google.charts.setOnLoadCallback(initInsightsChart);
 
     function initInsightsChart() {
-      const startInput = document.getElementById("insights-start");
-      const endInput = document.getElementById("insights-end");
-      const refreshBtn = document.getElementById("insights-refresh");
-
       // default to last 30 days
       const today = new Date().toISOString().slice(0, 10);
       const prior = new Date(Date.now() - 1000 * 60 * 60 * 24 * 30)
