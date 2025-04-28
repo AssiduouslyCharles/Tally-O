@@ -275,6 +275,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const startInput = document.getElementById("insights-start");
     const endInput = document.getElementById("insights-end");
     const refreshBtn = document.getElementById("insights-refresh");
+    const salesDiv = document.getElementById("insights-chart");
+    const activityDiv = document.getElementById("activity-chart");
     // Load the Google Charts corechart package
     google.charts.load("current", { packages: ["corechart"] });
     google.charts.setOnLoadCallback(initInsightsChart);
@@ -288,8 +290,13 @@ document.addEventListener("DOMContentLoaded", () => {
       endInput.value = today;
       startInput.value = prior;
 
-      refreshBtn.addEventListener("click", drawInsightsChart);
+      refreshBtn.addEventListener("click", () => {
+        drawInsightsChart();
+        drawActivityChart();
+      });
+      // initial draw
       drawInsightsChart();
+      drawActivityChart();
     }
 
     async function drawInsightsChart() {
@@ -332,10 +339,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }),
       ];
 
-      const dataTable = google.visualization.arrayToDataTable(dataArray);
+      const dataTable1 = google.visualization.arrayToDataTable(dataArray);
 
       // 5) Chart options (including any height/width you want)
-      const options = {
+      const options1 = {
         title: "Gross vs Net Sales Over Time",
         height: 300,
         hAxis: { title: "Date", format: "MMM d, yyyy" },
@@ -344,14 +351,46 @@ document.addEventListener("DOMContentLoaded", () => {
         areaOpacity: 0.2,
         legend: { position: "top" },
       };
-
-      // 6) Draw the chart
-      const chartDiv = document.getElementById("insights-chart");
-      const chart = new google.visualization.AreaChart(chartDiv);
-      chart.draw(dataTable, options);
+      new google.visualization.AreaChart(salesDiv).draw(dataTable1, options1);
     }
 
+    async function drawActivityChart() {
+      const start = startInput.value;
+      const end = endInput.value;
+      const res = await fetch(
+        `/api/insights-activity-data?start_date=${start}&end_date=${end}`
+      );
+      const rows = await res.json();
+
+      // build & draw Sales vs New Listings chart
+      const dataArray2 = [
+        ["Date", "Sales Count", "New Listings"],
+        ...rows.map((r) => {
+          const [y, m, d] = r.date
+            .split("-")
+            .map((v, i) => (i === 1 ? parseInt(v, 10) - 1 : parseInt(v, 10)));
+          return [new Date(y, m, d), r.sales_count, r.listings_count];
+        }),
+      ];
+      const dataTable2 = google.visualization.arrayToDataTable(dataArray2);
+      const options2 = {
+        title: "Sales vs New Listings",
+        height: 300,
+        hAxis: { title: "Date", format: "MMM d, yyyy" },
+        vAxis: { title: "Count" },
+        isStacked: false,
+        areaOpacity: 0.2,
+        legend: { position: "top" },
+      };
+      new google.visualization.AreaChart(activityDiv).draw(
+        dataTable2,
+        options2
+      );
+    }
     // keep it responsive
-    window.addEventListener("resize", drawInsightsChart);
+    window.addEventListener("resize", () => {
+      drawInsightsChart();
+      drawActivityChart();
+    });
   }
 });
