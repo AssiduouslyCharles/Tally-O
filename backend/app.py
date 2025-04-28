@@ -730,30 +730,46 @@ def api_insights_data():
 
     conn = sqlite3.connect(db_path)
     cur  = conn.cursor()
+    # day-by-day aggregates
     cur.execute("""
       SELECT
-        DATE(sold_date)     AS day,
-        COUNT(*)            AS count,
-        SUM(sold_for_price) AS gross,
-        SUM(net_return)     AS net
+        substr(sold_date,1,10)       AS day,
+        COUNT(*)                     AS count,
+        SUM(sold_for_price)          AS gross,
+        SUM(net_return)              AS net
       FROM sold_items
-      WHERE DATE(sold_date) BETWEEN ? AND ?
+      WHERE substr(sold_date,1,10) BETWEEN ? AND ?
       GROUP BY day
-      ORDER BY day
+      ORDER BY day;
     """, (start, end))
     rows = cur.fetchall()
+
+    # overall summary, including avg_npm
+    cur.execute("""
+      SELECT
+        SUM(sold_for_price)               AS total_gross,
+        SUM(net_return)                   AS total_net,
+        COUNT(*)                          AS total_count,
+        AVG(net_return * 1.0 / sold_for_price) * 100 AS avg_npm
+      FROM sold_items
+      WHERE substr(sold_date,1,10) BETWEEN ? AND ?
+    """, (start, end))
+    total_gross, total_net, total_count, avg_npm = cur.fetchone()
+
     conn.close()
 
     # build a list of dicts
     data = [
-      {
-        "date": r[0],
-        "count": r[1],
-        "gross": r[2] or 0.0, 
-        "net": r[3] or 0.0}
+      {"date": r[0], "count": r[1], "gross": r[2] or 0.0, "net": r[3] or 0.0}
       for r in rows
     ]
-    return jsonify(data)
+    summary = {
+      "total_gross":  total_gross or 0.0,
+      "total_net":    total_net   or 0.0,
+      "total_count":  total_count or 0,
+      "avg_npm":      avg_npm     or 0.0
+    }
+    return jsonify({"data": data, "summary": summary})
 
 
 if __name__ == '__main__':
