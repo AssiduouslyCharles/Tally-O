@@ -362,6 +362,15 @@ document.addEventListener("DOMContentLoaded", () => {
       );
       const rows = await res.json();
 
+      const totalListings = rows.reduce(
+        (sum, r) => sum + (r.listings_count || 0),
+        0
+      );
+      const totalSales = rows.reduce((sum, r) => sum + (r.sales_count || 0), 0);
+
+      document.getElementById("new-listings").textContent = totalListings;
+      document.getElementById("new-sales").textContent = totalSales;
+
       // build & draw Sales vs New Listings chart
       const dataArray2 = [
         ["Date", "Sales Count", "New Listings"],
