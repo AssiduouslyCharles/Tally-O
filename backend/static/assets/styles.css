@@ -151,7 +151,7 @@ button:hover {
 /* summary bar above the insights chart */
 .insights-summary {
   display: flex;
-  justify-content: space-between;
+  justify-content: left;
   margin-bottom: 16px;
   font-size: 1.1em;
   font-weight: bold;
