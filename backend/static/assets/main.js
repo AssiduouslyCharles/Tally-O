@@ -329,7 +329,7 @@ document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("avg-npm").textContent = avg_npm.toFixed(1) + "%";
 
       // 4) Build the data array for the chart
-      const dataArray = [
+      const dataArray1 = [
         ["Date", "Gross Sales", "Net Sales"],
         ...rows.map((r) => {
           const [y, m, d] = r.date
@@ -339,7 +339,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }),
       ];
 
-      const dataTable1 = google.visualization.arrayToDataTable(dataArray);
+      const dataTable1 = google.visualization.arrayToDataTable(dataArray1);
 
       // 5) Chart options (including any height/width you want)
       const options1 = {
