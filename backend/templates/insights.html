@@ -29,26 +29,29 @@
       </div>
     </header>
     <main>
-      <section class="insights-hero">
-        <div class="date-filters">
-          <label>
-            From
-            <input type="date" id="insights-start" />
-          </label>
-          <label>
-            To
-            <input type="date" id="insights-end" />
-          </label>
-          <button id="insights-refresh">Refresh</button>
-          <div class="insights-summary">
-            <div>Total Gross Sales: <span id="total-gross">$0.00</span></div>
-            <div>Total Net Sales: <span id="total-net">$0.00</span></div>
-          </div>
-        </div>
+      <!-- Date filters & Refresh above the hero -->
+      <div class="date-filters">
+        <label>
+          From
+          <input type="date" id="insights-start" />
+        </label>
+        <label>
+          To
+          <input type="date" id="insights-end" />
+        </label>
+        <button id="insights-refresh">Refresh</button>
+      </div>
 
-        <!-- 2) Replace <canvas> with a div for Google Charts -->
+      <!-- Hero: summary + chart -->
+      <section class="insights-hero">
+        <div class="insights-summary">
+          <div>Total Gross Sales: <span id="total-gross">$0.00</span></div>
+          <div>Total Net Sales: <span id="total-net">$0.00</span></div>
+        </div>
         <div id="insights-chart" style="width: 100%; height: 500px"></div>
       </section>
+
+      <!-- Stats breakdown under the chart -->
       <section class="insights-stats">
         <div>
           <div class="label">Avg Gross/Sale</div>
