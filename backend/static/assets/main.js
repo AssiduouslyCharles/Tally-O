@@ -301,13 +301,29 @@ document.addEventListener("DOMContentLoaded", () => {
       );
       const rows = await res.json();
 
-      // → NEW: compute totals
+      // compute totals and counts
       const totalGross = rows.reduce((sum, r) => sum + (r.gross || 0), 0);
       const totalNet = rows.reduce((sum, r) => sum + (r.net || 0), 0);
+      const totalCount = rows.reduce((sum, r) => sum + r.count, 0);
+      // compute averages
+      const avgGrossPerSale = totalCount > 0 ? totalGross / totalCount : 0;
+      const avgNetPerSale = totalCount > 0 ? totalNet / totalCount : 0;
+      // compute margins
+      const npm = totalGross > 0 ? (totalNet / totalGross) * 100 : 0;
+      const avgNpm =
+        avgGrossPerSale > 0 ? (avgNetPerSale / avgGrossPerSale) * 100 : 0;
+
+      // update UI with computed values
       document.getElementById("total-gross").textContent =
         "$" + totalGross.toFixed(2);
       document.getElementById("total-net").textContent =
         "$" + totalNet.toFixed(2);
+      document.getElementById("avg-gross").textContent =
+        "$" + avgGrossPerSale.toFixed(2);
+      document.getElementById("avg-net").textContent =
+        "$" + avgNetPerSale.toFixed(2);
+      document.getElementById("npm").textContent = npm.toFixed(1) + "%";
+      document.getElementById("avg-npm").textContent = avgNpm.toFixed(1) + "%";
 
       // build google dataArray
       const dataArray = [
