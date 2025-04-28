@@ -771,6 +771,57 @@ def api_insights_data():
     }
     return jsonify({"data": data, "summary": summary})
 
+@app.route('/api/insights-activity-data')
+def api_insights_activity_data():
+    # 1) Parse & default date range
+    start = request.args.get("start_date")
+    end   = request.args.get("end_date")
+    if not end:
+        end = datetime.utcnow().date().isoformat()
+    if not start:
+        start = (datetime.fromisoformat(end) - timedelta(days=30)).date().isoformat()
+
+    conn = sqlite3.connect(db_path)
+    cur  = conn.cursor()
+
+    # 2) Daily sales counts
+    cur.execute("""
+      SELECT
+        substr(sold_date,1,10) AS day,
+        COUNT(*)               AS sales_count
+      FROM sold_items
+      WHERE day BETWEEN ? AND ?
+      GROUP BY day;
+    """, (start, end))
+    sales = dict(cur.fetchall())
+
+    # 3) Daily new‐listings counts
+    cur.execute("""
+      SELECT
+        substr(list_date,1,10)  AS day,
+        COUNT(*)                AS listings_count
+      FROM inventory_items
+      WHERE day BETWEEN ? AND ?
+      GROUP BY day;
+    """, (start, end))
+    listings = dict(cur.fetchall())
+
+    conn.close()
+
+    # 4) Build a full range with zeros filled
+    start_dt = datetime.fromisoformat(start)
+    end_dt   = datetime.fromisoformat(end)
+    result   = []
+    for i in range((end_dt - start_dt).days + 1):
+        d = (start_dt + timedelta(days=i)).date().isoformat()
+        result.append({
+            "date":            d,
+            "sales_count":     sales.get(d, 0),
+            "listings_count":  listings.get(d, 0)
+        })
+
+    return jsonify(result)
+
 
 if __name__ == '__main__':
     # Run your Flask application in debug mode during development
