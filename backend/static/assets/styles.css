@@ -197,3 +197,9 @@ button:hover {
   font-weight: bold;
   margin-top: 4px;
 }
+
+.insights-activity {
+  max-width: 1200px;
+  margin: 40px auto 0;
+  padding: 0 16px;
+}
