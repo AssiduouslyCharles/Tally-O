@@ -141,6 +141,7 @@ button:hover {
   display: flex;
   gap: 1em;
   margin-bottom: 1em;
+  padding: 0 100px;
 }
 
 #insights-chart {
