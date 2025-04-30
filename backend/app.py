@@ -7,6 +7,7 @@ from flask import Flask, jsonify, render_template, redirect, request, session, u
 from datetime import timedelta, datetime
 import sqlite3
 from bs4 import BeautifulSoup
+import time
 
 # Determine the directory where this file is located
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -594,6 +595,7 @@ def update_ebay_data():
         return redirect(url_for("ebay_login"))
     
     try:
+        start = time.perf_counter()
         # Open a connection to the SQLite database (change the path if needed)
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
@@ -604,6 +606,8 @@ def update_ebay_data():
         get_inventory_data(cursor, access_token)
         update_sold_data(cursor)
         
+        elapsed = time.perf_counter() - start
+        print(f"Data update completed in {elapsed:.2f} seconds.")
         conn.commit()
     except Exception as e:
         conn.rollback()

@@ -300,6 +300,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     async function drawInsightsChart() {
+      console.time("renderSoldTable");
+
       const start = startInput.value;
       const end = endInput.value;
       const res = await fetch(
@@ -370,6 +372,7 @@ document.addEventListener("DOMContentLoaded", () => {
         legend: { position: "top" },
       };
       new google.visualization.AreaChart(salesDiv).draw(dataTable1, options1);
+      console.timeEnd("renderSoldTable");
     }
 
     async function drawActivityChart() {
