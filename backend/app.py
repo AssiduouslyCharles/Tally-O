@@ -717,8 +717,22 @@ def update_inventory_item(item_id):
 @app.route('/api/insights-data')
 def api_insights_data():
     """
-    Return JSON: [{ date: "2025-04-01", gross: 123.45, net: 67.89 }, …]
-    for sold_items between ?start_date and ?end_date (YYYY-MM-DD).
+    Return JSON: {
+      data: [
+        { date: "2025-04-01", count: 2, gross: 123.45, net: 67.89 },
+        …
+      ],
+      summary: {
+        total_gross,
+        total_net,
+        total_count,
+        avg_npm,
+        spent_inventory,
+        cost_of_goods_sold,
+        marketplace_fees,
+        shipping_labels
+      }
+    } for sold_items & inventory_items between ?start_date and ?end_date (YYYY-MM-DD).
     """
     start = request.args.get("start_date")
     end   = request.args.get("end_date")
@@ -730,46 +744,89 @@ def api_insights_data():
 
     conn = sqlite3.connect(db_path)
     cur  = conn.cursor()
-    # day-by-day aggregates
+
+    # 1) Daily sales aggregates
     cur.execute("""
       SELECT
-        substr(sold_date,1,10)       AS day,
-        COUNT(*)                     AS count,
-        SUM(sold_for_price)          AS gross,
-        SUM(net_return)              AS net
+        substr(sold_date,1,10) AS day,
+        COUNT(*)               AS count,
+        SUM(sold_for_price)    AS gross,
+        SUM(net_return)        AS net
       FROM sold_items
-      WHERE substr(sold_date,1,10) BETWEEN ? AND ?
+      WHERE day BETWEEN ? AND ?
       GROUP BY day
       ORDER BY day;
     """, (start, end))
     rows = cur.fetchall()
 
-    # overall summary, including avg_npm
+    # 2) Overall sales summary
     cur.execute("""
       SELECT
-        SUM(sold_for_price)               AS total_gross,
-        SUM(net_return)                   AS total_net,
-        COUNT(*)                          AS total_count,
+        SUM(sold_for_price)                     AS total_gross,
+        SUM(net_return)                         AS total_net,
+        COUNT(*)                                AS total_count,
         AVG(net_return * 1.0 / sold_for_price) * 100 AS avg_npm
       FROM sold_items
       WHERE substr(sold_date,1,10) BETWEEN ? AND ?
     """, (start, end))
     total_gross, total_net, total_count, avg_npm = cur.fetchone()
 
+    # 3) Spent on new inventory
+    cur.execute("""
+      SELECT
+        SUM(item_cost) AS spent_inventory
+      FROM inventory_items
+      WHERE substr(list_date,1,10) BETWEEN ? AND ?
+    """, (start, end))
+    spent_inventory = cur.fetchone()[0] or 0.0
+
+    # 4) Cost of goods sold
+    cur.execute("""
+      SELECT
+        SUM(item_cost) AS cost_of_goods_sold
+      FROM sold_items
+      WHERE substr(sold_date,1,10) BETWEEN ? AND ?
+    """, (start, end))
+    cost_of_goods_sold = cur.fetchone()[0] or 0.0
+
+    # 5) Marketplace fees (final + fixed + international)
+    cur.execute("""
+      SELECT
+        SUM(final_fee + fixed_final_fee + international_fee) AS marketplace_fees
+      FROM sold_items
+      WHERE substr(sold_date,1,10) BETWEEN ? AND ?
+    """, (start, end))
+    marketplace_fees = cur.fetchone()[0] or 0.0
+
+    # 6) Shipping labels cost
+    cur.execute("""
+      SELECT
+        SUM(cost_to_ship) AS shipping_labels
+      FROM sold_items
+      WHERE substr(sold_date,1,10) BETWEEN ? AND ?
+    """, (start, end))
+    shipping_labels = cur.fetchone()[0] or 0.0
+
     conn.close()
 
-    # build a list of dicts
+    # Build response
     data = [
-      {"date": r[0], "count": r[1], "gross": r[2] or 0.0, "net": r[3] or 0.0}
-      for r in rows
+        {"date": r[0], "count": r[1], "gross": r[2] or 0.0, "net": r[3] or 0.0}
+        for r in rows
     ]
     summary = {
-      "total_gross":  total_gross or 0.0,
-      "total_net":    total_net   or 0.0,
-      "total_count":  total_count or 0,
-      "avg_npm":      avg_npm     or 0.0
+        "total_gross":        total_gross       or 0.0,
+        "total_net":          total_net         or 0.0,
+        "total_count":        total_count       or 0,
+        "avg_npm":            avg_npm           or 0.0,
+        "spent_inventory":    spent_inventory,
+        "cost_of_goods_sold": cost_of_goods_sold,
+        "marketplace_fees":   marketplace_fees,
+        "shipping_labels":    shipping_labels
     }
+
     return jsonify({"data": data, "summary": summary})
+
 
 @app.route('/api/insights-activity-data')
 def api_insights_activity_data():

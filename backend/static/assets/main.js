@@ -307,7 +307,16 @@ document.addEventListener("DOMContentLoaded", () => {
       );
       const json = await res.json();
       const rows = json.data;
-      const { total_gross, total_net, total_count, avg_npm } = json.summary;
+      const {
+        total_gross,
+        total_net,
+        total_count,
+        avg_npm,
+        spent_inventory,
+        cost_of_goods_sold,
+        marketplace_fees,
+        shipping_labels,
+      } = json.summary;
 
       // 1) Update total gross & net
       document.getElementById("total-gross").textContent =
@@ -327,6 +336,15 @@ document.addEventListener("DOMContentLoaded", () => {
         "$" + avgNetPerSale.toFixed(2);
       document.getElementById("npm").textContent = totalNpm.toFixed(1) + "%";
       document.getElementById("avg-npm").textContent = avg_npm.toFixed(1) + "%";
+      // costs stats
+      document.getElementById("spent-inventory").textContent =
+        "$" + spent_inventory.toFixed(2);
+      document.getElementById("cogs").textContent =
+        "$" + cost_of_goods_sold.toFixed(2);
+      document.getElementById("marketplace-fees").textContent =
+        "$" + marketplace_fees.toFixed(2);
+      document.getElementById("shipping-labels").textContent =
+        "$" + shipping_labels.toFixed(2);
 
       // 4) Build the data array for the chart
       const dataArray1 = [
