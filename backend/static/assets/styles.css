@@ -198,6 +198,32 @@ button:hover {
   margin-top: 4px;
 }
 
+/* ───────────── Insights costs bar ───────────── */
+.insights-costs {
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  margin-top: 24px;
+  padding: 0px 100px 20px;
+}
+.insights-costs > div {
+  flex: 1;
+  background: #fff;
+  padding: 12px;
+  border-radius: 6px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+.insights-costs .label {
+  font-size: 0.9em;
+  color: #666;
+}
+.insights-costs .value {
+  font-size: 1.4em;
+  font-weight: bold;
+  margin-top: 4px;
+}
+
 .insights-activity {
   padding: 10px;
   max-width: 1300px;
