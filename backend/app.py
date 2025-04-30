@@ -792,7 +792,11 @@ def api_insights_data():
     # 5) Marketplace fees (final + fixed + international)
     cur.execute("""
       SELECT
-        SUM(final_fee) AS marketplace_fees
+        SUM(
+            COALESCE(final_fee,0)
+            + COALESCE(fixed_final_fee,0)
+            + COALESCE(international_fee,0)
+            ) AS marketplace_fees
       FROM sold_items
       WHERE substr(sold_date,1,10) BETWEEN ? AND ?
     """, (start, end))
